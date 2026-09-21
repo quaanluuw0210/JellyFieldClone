@@ -31,7 +31,7 @@ public class BoardView : MonoBehaviour
     {
         if (gridSystem == null)
         {
-            gridSystem = FindObjectOfType<GridSystem>();
+            gridSystem = FindFirstObjectByType<GridSystem>();
         }
     }
 
