@@ -14,12 +14,38 @@ public class Cell
 {
     public Vector2Int GridPosition { get; private set; }
 
+    // Mỗi Cell chỉ nhận một Block container kích thước 1x1.
+    private Block block;
+
     // Mảng 4 sub-slot đại diện cho 4 góc của ô 1x1
     private JellyBlockBase[] subSlots = new JellyBlockBase[4];
 
     public Cell(Vector2Int gridPosition)
     {
         GridPosition = gridPosition;
+    }
+
+    public Block Block => block;
+
+    public bool HasBlock()
+    {
+        return block != null;
+    }
+
+    public bool PlaceBlock(Block newBlock)
+    {
+        if (newBlock == null || block != null) return false;
+
+        block = newBlock;
+        return true;
+    }
+
+    public void ClearBlock(Block targetBlock = null)
+    {
+        if (targetBlock == null || block == targetBlock)
+        {
+            block = null;
+        }
     }
 
     public bool IsEmpty()

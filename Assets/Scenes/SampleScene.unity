@@ -590,7 +590,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BoardView
   gridSystem: {fileID: 1107045569}
   cellPrefab: {fileID: 1822025829048321520, guid: 3195c3b9ec57e6148a49d3551ac5ceb1, type: 3}
-  blockPrefab: {fileID: 8966822428237382039, guid: a78ed93319212c44d9bcc681eed8cc34, type: 3}
+  blockPrefab: {fileID: 1235194788267269182, guid: 1eece88d0fbcdcf46a744c17fdbc1111, type: 3}
   centerBoard: 1
   runHardcodedTestOnStart: 1
 --- !u!4 &1107045572

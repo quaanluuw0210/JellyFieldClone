@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &8139815334777378967
+--- !u!1 &54092535630236080
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,11 +8,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7407776361779315949}
-  - component: {fileID: 1740351381935808943}
-  - component: {fileID: 8883611418368318764}
-  - component: {fileID: 3799789063206613723}
-  - component: {fileID: 5352459977494021846}
+  - component: {fileID: 2776980107500098401}
+  - component: {fileID: 6231288163273709799}
+  - component: {fileID: 3558643250594324472}
+  - component: {fileID: 844666111446526826}
   m_Layer: 8
   m_Name: Cube_Sigle_Red
   m_TagString: Untagged
@@ -20,36 +19,36 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7407776361779315949
+--- !u!4 &2776980107500098401
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8139815334777378967}
+  m_GameObject: {fileID: 54092535630236080}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3536831550362079383}
+  m_Father: {fileID: 4800945359951690503}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &1740351381935808943
+--- !u!33 &6231288163273709799
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8139815334777378967}
+  m_GameObject: {fileID: 54092535630236080}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &8883611418368318764
+--- !u!23 &3558643250594324472
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8139815334777378967}
+  m_GameObject: {fileID: 54092535630236080}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -92,13 +91,13 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &3799789063206613723
+--- !u!65 &844666111446526826
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8139815334777378967}
+  m_GameObject: {fileID: 54092535630236080}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -113,24 +112,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &5352459977494021846
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8139815334777378967}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f267513e646838d47a4441a75e61829c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::JellyFullBlock
-  color: 0
-  material: {fileID: 0}
-  blockScale: {x: 1, y: 1, z: 1}
-  jiggleDuration: 0.18
-  jiggleStrength: 0.08
---- !u!1 &8899516770398214533
+--- !u!1 &5072135731806283921
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -138,39 +120,40 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3536831550362079383}
-  - component: {fileID: 3292843668555815004}
-  - component: {fileID: 8966822428237382039}
+  - component: {fileID: 4800945359951690503}
+  - component: {fileID: 1550669199193080554}
+  - component: {fileID: 9185150710130465740}
+  - component: {fileID: 6364611373697720800}
   m_Layer: 8
-  m_Name: Block_Full_Red
+  m_Name: Block_Sigle_Red
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &3536831550362079383
+--- !u!4 &4800945359951690503
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8899516770398214533}
+  m_GameObject: {fileID: 5072135731806283921}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 10.84, y: 0, z: -4.731}
+  m_LocalPosition: {x: -2.5763, y: 11.42539, z: -5.03926}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 7407776361779315949}
+  - {fileID: 2776980107500098401}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &3292843668555815004
+--- !u!65 &1550669199193080554
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8899516770398214533}
+  m_GameObject: {fileID: 5072135731806283921}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -185,20 +168,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0.5, z: 0}
---- !u!114 &8966822428237382039
+--- !u!114 &9185150710130465740
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8899516770398214533}
+  m_GameObject: {fileID: 5072135731806283921}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 17dac2440a7bd424facd8dde5e3d5a85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Block
   gridSystem: {fileID: 0}
-  subBlocks: []
+  jellyBlock: {fileID: 0}
   dragHeight: 0.35
   pickupHeight: 0.15
   pickupScale: 1.08
@@ -207,6 +190,24 @@ MonoBehaviour:
   returnDuration: 0.32
   snapEase: 27
   returnEase: 30
+  singleSlot: 0
   jiggleDuration: 0.2
   jiggleStrength: 0.1
   jiggleVibrato: 8
+--- !u!114 &6364611373697720800
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5072135731806283921}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1dcec59ff7346f4b8ddc9e308a8b194, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JellySingleBlock
+  color: 0
+  material: {fileID: 0}
+  blockScale: {x: 1, y: 1, z: 1}
+  jiggleDuration: 0.18
+  jiggleStrength: 0.08
