@@ -1,0 +1,58 @@
+# --- Unity Folders ---
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]serSettings/
+/Assets/AssetStoreTools*
+
+# --- IDE (Cực kỳ quan trọng để hết đỏ) ---
+.vs/                  
+.vscode/
+.idea/
+*.csproj
+*.sln
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Project Assets ---
+Assets/_Recovery/
+
+
+# Firebase config files
+google-services.json
+GoogleService-Info.plist
+
+
+# Memory captures
+*.vsp
+*.profiler
+*.log
+*.mmap
+
+
+# Crashlytics và Firebase tạm (nếu có)
+Firebase/*
+!Firebase/*.bundle
+
+# --- Android / iOS specific ---
+*.apk
+*.aab
+*.unitypackage
+*.ipa
+
+
+*.zip
+*.zip.meta
+google-services.json.meta
+GoogleService-Info.plist.meta
+ProjectSettings/AndroidResolverDependencies.xml
+ProjectSettings/GvhProjectSettings.xml
