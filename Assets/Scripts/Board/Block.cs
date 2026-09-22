@@ -243,6 +243,48 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
         return touchingBlocks;
     }
 
+    ///// <summary>
+    ///// Kiểm tra hai Jelly ở hai Block kề nhau có thật sự đối diện trên cùng
+    ///// đoạn biên hay chỉ chạm cùng một cạnh nhưng lệch góc.
+    ///// </summary>
+    //public bool IsSubBlockAlignedAcrossEdge(
+    //    JellyBlockBase localSubBlock,
+    //    Block neighborBlock,
+    //    JellyBlockBase neighborSubBlock,
+    //    Vector2Int direction)
+    //{
+    //    if (localSubBlock == null || neighborBlock == null || neighborSubBlock == null)
+    //    {
+    //        return false;
+    //    }
+
+    //    if (!TryGetLocalBounds(localSubBlock, out Bounds localBounds) ||
+    //        !neighborBlock.TryGetLocalBounds(neighborSubBlock, out Bounds neighborBounds))
+    //    {
+    //        return false;
+    //    }
+
+    //    const float overlapTolerance = 0.001f;
+    //    if (direction == Vector2Int.left || direction == Vector2Int.right)
+    //    {
+    //        return localBounds.min.z <= neighborBounds.max.z + overlapTolerance &&
+    //               localBounds.max.z >= neighborBounds.min.z - overlapTolerance;
+    //    }
+
+    //    if (direction == Vector2Int.up || direction == Vector2Int.down)
+    //    {
+    //        return localBounds.min.x <= neighborBounds.max.x + overlapTolerance &&
+    //               localBounds.max.x >= neighborBounds.min.x - overlapTolerance;
+    //    }
+
+    //    return false;
+    //}
+
+    // Trong Block.cs
+
+    /// <summary>
+    /// Kiểm tra xem 2 SubBlock thuộc 2 Block lân cận có đối diện trực tiếp (thẳng hàng) với nhau qua cạnh tiếp xúc hay không.
+    /// </summary>
     /// <summary>
     /// Kiểm tra hai Jelly ở hai Block kề nhau có thật sự đối diện trên cùng
     /// đoạn biên hay chỉ chạm cùng một cạnh nhưng lệch góc.
@@ -264,22 +306,31 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
             return false;
         }
 
-        const float overlapTolerance = 0.001f;
+        // Yêu cầu phần giao nhau (Overlap) phải lớn hơn minOverlapThreshold để không bị dính vết chạm góc
+        const float minOverlapThreshold = 0.1f;
+
         if (direction == Vector2Int.left || direction == Vector2Int.right)
         {
-            return localBounds.min.z <= neighborBounds.max.z + overlapTolerance &&
-                   localBounds.max.z >= neighborBounds.min.z - overlapTolerance;
+            // Tính độ dài phần đè lên nhau theo trục Z
+            float overlapMinZ = Mathf.Max(localBounds.min.z, neighborBounds.min.z);
+            float overlapMaxZ = Mathf.Min(localBounds.max.z, neighborBounds.max.z);
+            float overlapLength = overlapMaxZ - overlapMinZ;
+
+            return overlapLength >= minOverlapThreshold;
         }
 
         if (direction == Vector2Int.up || direction == Vector2Int.down)
         {
-            return localBounds.min.x <= neighborBounds.max.x + overlapTolerance &&
-                   localBounds.max.x >= neighborBounds.min.x - overlapTolerance;
+            // Tính độ dài phần đè lên nhau theo trục X
+            float overlapMinX = Mathf.Max(localBounds.min.x, neighborBounds.min.x);
+            float overlapMaxX = Mathf.Min(localBounds.max.x, neighborBounds.max.x);
+            float overlapLength = overlapMaxX - overlapMinX;
+
+            return overlapLength >= minOverlapThreshold;
         }
 
         return false;
     }
-
     public void RemoveSubBlocks(List<JellyBlockBase> subBlocksToRemove)
     {
         if (subBlocksToRemove == null || subBlocksToRemove.Count == 0) return;
