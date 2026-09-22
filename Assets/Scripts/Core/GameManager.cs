@@ -25,20 +25,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        // Khởi tạo Game Flow
-        InitializeGame();
-    }
-
-    private void InitializeGame()
-    {
-        // 1. Khởi tạo dữ liệu Bàn chơi (Test 5x5)
-        gridSystem.InitializeRectangularGrid(5, 5);
-
-        // 2. Render giao diện bàn chơi lên Scene
-        boardView.GenerateBoardVisuals();
-
-        // 3. Spawn Block thử nghiệm
-        boardView.SpawnBlockAt(new Vector2Int(2, 2));
+       
     }
 
     #region Event Handlers (Xử lý Game Rules)
@@ -47,36 +34,43 @@ public class GameManager : MonoBehaviour
     {
         selectedBlock = block;
         Debug.Log($"[GameManager] Đã chọn Block: {block.name}");
-
-        // Kích hoạt hiệu ứng nảy Jiggle khi chọn
-        //block.PlayJiggleAnimation(0.2f);
     }
 
     private void HandleCellTapped(Vector2Int gridPos)
     {
-        Debug.Log($"[GameManager] Người dùng chạm vào ô Grid: {gridPos}");
-
-        // Kiểm tra vị trí chạm có nằm trên Lưới hợp lệ không
         if (!gridSystem.IsValidPosition(gridPos))
         {
-            Debug.LogWarning("[GameManager] Vị trí chạm nằm ngoài Bàn chơi!");
+            selectedBlock = null;
             return;
         }
 
         Cell targetCell = gridSystem.GetCell(gridPos);
 
-        // Thực hiện Rule Game: Nếu đang chọn 1 Block và ô được chạm còn trống
         if (selectedBlock != null && targetCell != null && targetCell.IsEmpty())
         {
-            // Di chuyển Block tới ô mới
-            Vector3 targetWorldPos = boardView.GetWorldPositionForCell(gridPos, boardView.GetBoardCenterOffset());
+            // Lấy vị trí chuẩn trực tiếp từ GridSystem
+            Vector3 targetWorldPos = gridSystem.GetWorldPosition(gridPos);
 
-            // Xử lý di chuyển và cập nhật lại Logic Grid
+            // Đặt block tới vị trí mới
             selectedBlock.transform.position = targetWorldPos + Vector3.up * 0.1f;
-            //selectedBlock.PlayJiggleAnimation(0.25f);
 
-            // Xóa tham chiếu Block đang chọn
+            // Cập nhật dữ liệu & gọi Match
+            gridSystem.PlaceBlock(selectedBlock, gridPos);
+            MatchLogic.ProcessMatchAndMerge(gridSystem, gridPos);
+
             selectedBlock = null;
+        }
+    }
+    public void HandleBlockDropped(Block block, Vector2Int gridPos)
+    {
+        Debug.Log($"[GameManager] Block {block.name} vừa được thả vào vị trí Grid: {gridPos}");
+
+        // Thực hiện logic Gộp màu (Match & Merge) ngay sau khi thả Block thành công
+        bool hasMatch = MatchLogic.ProcessMatchAndMerge(gridSystem, gridPos);
+
+        if (hasMatch)
+        {
+            Debug.Log("[GameManager] Gộp màu thành công!");
         }
     }
 

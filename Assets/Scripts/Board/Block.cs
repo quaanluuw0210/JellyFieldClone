@@ -25,12 +25,8 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
     [SerializeField] private Ease snapEase = Ease.OutBack;
     [SerializeField] private Ease returnEase = Ease.OutBounce;
 
-    [Header("Jelly Animation")]
-    [SerializeField] private float jiggleDuration = 0.2f;
-    [SerializeField] private float jiggleStrength = 0.1f;
-    [SerializeField] private int jiggleVibrato = 8;
-
     public event Action<Block, Vector2Int> OnBlockDropped;
+    public event Action<Block> OnBlockCleanedUp;
 
     private Camera mainCamera;
     private Plane dragPlane;
@@ -47,6 +43,14 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
 
     public IReadOnlyList<JellyBlockBase> SubBlocks => subBlocks;
     public bool IsDragging => isDragging;
+
+    public bool IsFullJelly
+    {
+        get
+        {
+            return subBlocks.Count == 1 && subBlocks[0] is JellyFullBlock;
+        }
+    }
 
     public void SetBoardWorldOffset(Vector3 offset)
     {
@@ -153,7 +157,6 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
             {
                 originalPosition = transform.position;
                 wasPlacedBeforeDrag = false;
-                PlayJiggleAnimation();
                 OnBlockDropped?.Invoke(this, gridPosition);
             });
     }
@@ -198,28 +201,166 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
 
                 wasPlacedBeforeDrag = false;
                 transform.position = originalPosition; // Reset chuẩn vị trí Y
-                PlayJiggleAnimation();
+              
             });
     }
 
-    public void PlayJiggleAnimation()
+    /// <summary>
+    /// Khai báo và đăng ký Block vào Cell ngay khi được sinh ra trực tiếp trên bàn chơi.
+    /// </summary>
+    public void InitializePlacedState(Cell cell)
     {
-        scaleTween?.Kill();
-        transform.localScale = originalScale;
+        if (cell == null) return;
 
-        scaleTween = transform.DOShakeScale(
-                jiggleDuration,
-                jiggleStrength,
-                jiggleVibrato,
-                90f,
-                false)
-            .SetEase(Ease.OutQuad)
-            .OnComplete(() => transform.localScale = originalScale);
+        RegisterInCell(cell);
+        originalPosition = transform.position;
+        hasBeenPlaced = true;
     }
 
     public void ClearPlacement()
     {
         ClearPlacementAt(transform.position);
+    }
+
+    public List<JellyBlockBase> GetSubBlocksTouchingEdge(Vector2Int direction)
+    {
+        List<JellyBlockBase> touchingBlocks = new List<JellyBlockBase>();
+        const float edgeTolerance = 0.05f;
+
+        foreach (JellyBlockBase subBlock in subBlocks)
+        {
+            if (subBlock == null) continue;
+            if (!TryGetLocalBounds(subBlock, out Bounds bounds)) continue;
+
+            bool touchesEdge = direction == Vector2Int.right && bounds.max.x >= 0.5f - edgeTolerance;
+            touchesEdge |= direction == Vector2Int.left && bounds.min.x <= -0.5f + edgeTolerance;
+            touchesEdge |= direction == Vector2Int.up && bounds.max.z >= 0.5f - edgeTolerance;
+            touchesEdge |= direction == Vector2Int.down && bounds.min.z <= -0.5f + edgeTolerance;
+
+            if (touchesEdge) touchingBlocks.Add(subBlock);
+        }
+
+        return touchingBlocks;
+    }
+
+    /// <summary>
+    /// Kiểm tra hai Jelly ở hai Block kề nhau có thật sự đối diện trên cùng
+    /// đoạn biên hay chỉ chạm cùng một cạnh nhưng lệch góc.
+    /// </summary>
+    public bool IsSubBlockAlignedAcrossEdge(
+        JellyBlockBase localSubBlock,
+        Block neighborBlock,
+        JellyBlockBase neighborSubBlock,
+        Vector2Int direction)
+    {
+        if (localSubBlock == null || neighborBlock == null || neighborSubBlock == null)
+        {
+            return false;
+        }
+
+        if (!TryGetLocalBounds(localSubBlock, out Bounds localBounds) ||
+            !neighborBlock.TryGetLocalBounds(neighborSubBlock, out Bounds neighborBounds))
+        {
+            return false;
+        }
+
+        const float overlapTolerance = 0.001f;
+        if (direction == Vector2Int.left || direction == Vector2Int.right)
+        {
+            return localBounds.min.z <= neighborBounds.max.z + overlapTolerance &&
+                   localBounds.max.z >= neighborBounds.min.z - overlapTolerance;
+        }
+
+        if (direction == Vector2Int.up || direction == Vector2Int.down)
+        {
+            return localBounds.min.x <= neighborBounds.max.x + overlapTolerance &&
+                   localBounds.max.x >= neighborBounds.min.x - overlapTolerance;
+        }
+
+        return false;
+    }
+
+    public void RemoveSubBlocks(List<JellyBlockBase> subBlocksToRemove)
+    {
+        if (subBlocksToRemove == null || subBlocksToRemove.Count == 0) return;
+
+        bool fullJellyMatched = IsFullJelly && subBlocksToRemove.Contains(subBlocks[0]);
+        HashSet<JellyBlockBase> uniqueBlocks = new HashSet<JellyBlockBase>(subBlocksToRemove);
+
+        foreach (JellyBlockBase subBlock in uniqueBlocks)
+        {
+            if (subBlock == null) continue;
+            subBlocks.Remove(subBlock);
+            Destroy(subBlock.gameObject);
+        }
+
+        if (fullJellyMatched || subBlocks.Count == 0)
+        {
+            ClearPlacement();
+            OnBlockDropped = null;
+            OnBlockCleanedUp?.Invoke(this);
+            OnBlockCleanedUp = null;
+            Destroy(gameObject);
+            return;
+        }
+
+        RecoverShape();
+    }
+
+    public void RecoverShape()
+    {
+        Debug.Log(string.Format("[Block {0}] Executing shape recovery/refill...", name), this);
+    }
+
+    private bool TryGetLocalBounds(JellyBlockBase subBlock, out Bounds localBounds)
+    {
+        localBounds = default;
+        bool hasBounds = false;
+
+        foreach (Renderer renderer in subBlock.GetComponentsInChildren<Renderer>(true))
+        {
+            AddWorldBoundsToLocalBounds(renderer.bounds, ref localBounds, ref hasBounds);
+        }
+
+        if (!hasBounds)
+        {
+            foreach (Collider collider in subBlock.GetComponentsInChildren<Collider>(true))
+            {
+                AddWorldBoundsToLocalBounds(collider.bounds, ref localBounds, ref hasBounds);
+            }
+        }
+
+        return hasBounds;
+    }
+
+    private void AddWorldBoundsToLocalBounds(
+        Bounds worldBounds,
+        ref Bounds localBounds,
+        ref bool hasBounds)
+    {
+        Vector3 min = worldBounds.min;
+        Vector3 max = worldBounds.max;
+        Vector3[] corners =
+        {
+            new Vector3(min.x, min.y, min.z), new Vector3(min.x, min.y, max.z),
+            new Vector3(min.x, max.y, min.z), new Vector3(min.x, max.y, max.z),
+            new Vector3(max.x, min.y, min.z), new Vector3(max.x, min.y, max.z),
+            new Vector3(max.x, max.y, min.z), new Vector3(max.x, max.y, max.z)
+        };
+
+        foreach (Vector3 corner in corners)
+        {
+            Vector3 localCorner = transform.InverseTransformPoint(corner);
+            if (!hasBounds)
+            {
+                localBounds = new Bounds(localCorner, Vector3.zero);
+                hasBounds = true;
+            }
+            else
+            {
+                localBounds.Encapsulate(localCorner);
+            }
+        }
     }
 
     private void ClearPlacementAt(Vector3 worldPos)

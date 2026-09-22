@@ -3,298 +3,167 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Domain service xử lý match giữa các Cell trên GridSystem.
-///
-/// Class này không giữ state của một level. Mọi state vẫn nằm trong Cell và
-/// GridSystem; MatchLogic chỉ đọc, xóa slot, phát thông báo visual và lặp
-/// chain reaction cho tới khi bàn ổn định.
+/// Domain service cho match giữa các JellyBlockBase nằm trong hai Block.
+/// Block là container 1x1; JellyBlockBase mới là đơn vị màu được match.
 /// </summary>
 public static class MatchLogic
 {
-    /// <summary>
-    /// Được gọi sau khi một slot bị xóa khỏi Cell.
-    /// </summary>
-    public static event Action<JellyBlockBase, Cell, int> OnSubBlockCleared;
+    public static event Action<JellyBlockBase, Block> OnSubBlockMatched;
+    public static event Action<Block> OnBlockMatched;
 
     /// <summary>
-    /// Được gọi sau khi Cell được tái cấu trúc. Danh sách slot là các slot
-    /// hiện còn chứa block sau khi match; visual layer dùng event này để nở
-    /// hoặc căn lại hình dạng block.
+    /// Horizontal được xử lý trước Vertical. Nếu cả hai trục có match ở cùng
+    /// lượt, chỉ match ngang được xóa; lượt quét tiếp theo xử lý chain dọc.
     /// </summary>
-    public static event Action<JellyBlockBase, Cell, IReadOnlyList<int>> OnBlockExpanded;
-
-    /// <summary>
-    /// Được gọi trước khi GameObject của block bị Destroy.
-    /// </summary>
-    public static event Action<JellyBlockBase> OnBlockDestroyed;
-
-    /// <summary>
-    /// Kiểm tra match bắt đầu từ Cell vừa đặt, sau đó tiếp tục xử lý các
-    /// Cell bị ảnh hưởng cho tới khi không còn cặp màu nào giáp cạnh.
-    /// </summary>
-    public static bool ProcessMatchAndMerge(GridSystem gridSystem, Vector2Int currentGridPos)
+    public static bool ProcessMatchAndMerge(GridSystem gridSystem, Vector2Int placedPos)
     {
         if (gridSystem == null) return false;
 
-        Cell currentCell = gridSystem.GetCell(currentGridPos);
-        if (currentCell == null) return false;
+        Cell placedCell = gridSystem.GetCell(placedPos);
+        if (placedCell == null || !placedCell.HasBlock()) return false;
 
-        bool hasMatch = false;
-        Queue<Cell> cellsToCheck = new Queue<Cell>();
-        HashSet<Cell> queuedCells = new HashSet<Cell>();
-        HashSet<JellyBlockBase> destroyedBlocks = new HashSet<JellyBlockBase>();
+        bool hasAnyMatch = false;
+        Queue<Vector2Int> positionsToCheck = new Queue<Vector2Int>();
+        HashSet<Vector2Int> queuedPositions = new HashSet<Vector2Int>();
+        EnqueuePosition(placedPos, positionsToCheck, queuedPositions);
 
-        EnqueueCell(currentCell, cellsToCheck, queuedCells);
-        EnqueueNeighbors(gridSystem, currentCell, cellsToCheck, queuedCells);
-
-        while (cellsToCheck.Count > 0)
+        while (positionsToCheck.Count > 0)
         {
-            Cell cell = cellsToCheck.Dequeue();
-            queuedCells.Remove(cell);
+            Vector2Int position = positionsToCheck.Dequeue();
+            queuedPositions.Remove(position);
+            Cell sourceCell = gridSystem.GetCell(position);
+            if (sourceCell == null || !sourceCell.HasBlock()) continue;
 
-            if (cell == null) continue;
+            bool horizontalMatch = ProcessDirection(
+                gridSystem, sourceCell, Vector2Int.left, positionsToCheck, queuedPositions);
+            horizontalMatch |= ProcessDirection(
+                gridSystem, sourceCell, Vector2Int.right, positionsToCheck, queuedPositions);
 
-            foreach (Cell neighbor in gridSystem.GetNeighbors(cell.GridPosition))
+            if (horizontalMatch)
             {
-                if (neighbor == null) continue;
+                hasAnyMatch = true;
+                EnqueueAffectedArea(gridSystem, sourceCell, positionsToCheck, queuedPositions);
+                continue;
+            }
 
-                bool matched = CheckAndClearAdjacents(
-                    cell,
-                    neighbor,
-                    gridSystem,
-                    destroyedBlocks,
-                    out bool cellChanged,
-                    out bool neighborChanged);
+            bool verticalMatch = ProcessDirection(
+                gridSystem, sourceCell, Vector2Int.down, positionsToCheck, queuedPositions);
+            verticalMatch |= ProcessDirection(
+                gridSystem, sourceCell, Vector2Int.up, positionsToCheck, queuedPositions);
 
-                if (!matched) continue;
-
-                hasMatch = true;
-
-                if (cellChanged)
-                {
-                    RestructureCell(cell);
-                }
-
-                if (neighborChanged)
-                {
-                    RestructureCell(neighbor);
-                }
-
-                // Sau khi clear/expand, cả hai Cell và hàng xóm của chúng
-                // phải được quét lại để bắt chain reaction mới.
-                EnqueueAffectedArea(gridSystem, cell, cellsToCheck, queuedCells);
-                EnqueueAffectedArea(gridSystem, neighbor, cellsToCheck, queuedCells);
+            if (verticalMatch)
+            {
+                hasAnyMatch = true;
+                EnqueueAffectedArea(gridSystem, sourceCell, positionsToCheck, queuedPositions);
             }
         }
 
-        return hasMatch;
+        return hasAnyMatch;
     }
 
-    /// <summary>
-    /// So sánh đúng hai slot nằm trên cùng đường biên giữa hai Cell.
-    /// Không bao giờ so sánh slot chéo hoặc slot nằm bên trong Cell.
-    /// </summary>
-    private static bool CheckAndClearAdjacents(
-        Cell cellA,
-        Cell cellB,
+    private static bool ProcessDirection(
         GridSystem gridSystem,
-        HashSet<JellyBlockBase> destroyedBlocks,
-        out bool cellAChanged,
-        out bool cellBChanged)
+        Cell sourceCell,
+        Vector2Int direction,
+        Queue<Vector2Int> positionsToCheck,
+        HashSet<Vector2Int> queuedPositions)
     {
-        cellAChanged = false;
-        cellBChanged = false;
+        Vector2Int neighborPosition = sourceCell.GridPosition + direction;
+        Cell neighborCell = gridSystem.GetCell(neighborPosition);
+        if (neighborCell == null || !neighborCell.HasBlock()) return false;
 
-        if (cellA == null || cellB == null) return false;
+        Block sourceBlock = sourceCell.Block;
+        Block neighborBlock = neighborCell.Block;
+        List<JellyBlockBase> sourceEdge = sourceBlock.GetSubBlocksTouchingEdge(direction);
+        List<JellyBlockBase> neighborEdge = neighborBlock.GetSubBlocksTouchingEdge(-direction);
+        if (sourceEdge.Count == 0 || neighborEdge.Count == 0) return false;
 
-        Vector2Int difference = cellB.GridPosition - cellA.GridPosition;
-        bool matched = false;
+        List<JellyBlockBase> sourceMatches = new List<JellyBlockBase>();
+        List<JellyBlockBase> neighborMatches = new List<JellyBlockBase>();
 
-        if (difference == Vector2Int.right)
+        foreach (JellyBlockBase sourceSubBlock in sourceEdge)
         {
-            matched |= CompareAndClear(cellA, (int)SubSlotIndex.TopRight,
-                cellB, (int)SubSlotIndex.TopLeft, gridSystem, destroyedBlocks,
-                ref cellAChanged, ref cellBChanged);
-            matched |= CompareAndClear(cellA, (int)SubSlotIndex.BottomRight,
-                cellB, (int)SubSlotIndex.BottomLeft, gridSystem, destroyedBlocks,
-                ref cellAChanged, ref cellBChanged);
+            foreach (JellyBlockBase neighborSubBlock in neighborEdge)
+            {
+                if (sourceSubBlock == null || neighborSubBlock == null) continue;
+
+                // --- THÊM DEBUG LOG Ở ĐÂY ---
+                Debug.Log($"[MatchCheck] Hướng: {direction} | " +
+                          $"Source ({sourceCell.GridPosition}): {sourceSubBlock.name} [Color: {sourceSubBlock.Color}] VS " +
+                          $"Neighbor ({neighborCell.GridPosition}): {neighborSubBlock.name} [Color: {neighborSubBlock.Color}]");
+
+                if (sourceSubBlock.Color != neighborSubBlock.Color)
+                {
+                    Debug.Log($"---> Không khớp màu ({sourceSubBlock.Color} != {neighborSubBlock.Color})");
+                    continue;
+                }
+
+                if (!sourceBlock.IsSubBlockAlignedAcrossEdge(
+                    sourceSubBlock,
+                    neighborBlock,
+                    neighborSubBlock,
+                    direction))
+                {
+                    Debug.Log($"---> Cùng màu nhưng KHÔNG căn chỉnh khớp vị trí cạnh!");
+                    continue;
+                }
+
+                Debug.Log($"===> KHỚP MÀU VÀ VỊ TRÍ: {sourceSubBlock.Color}!");
+
+                if (!sourceMatches.Contains(sourceSubBlock)) sourceMatches.Add(sourceSubBlock);
+                if (!neighborMatches.Contains(neighborSubBlock)) neighborMatches.Add(neighborSubBlock);
+                break;
+            }
         }
-        else if (difference == Vector2Int.left)
+
+        if (sourceMatches.Count == 0) return false;
+
+        foreach (JellyBlockBase matchedSubBlock in sourceMatches)
         {
-            matched |= CompareAndClear(cellA, (int)SubSlotIndex.TopLeft,
-                cellB, (int)SubSlotIndex.TopRight, gridSystem, destroyedBlocks,
-                ref cellAChanged, ref cellBChanged);
-            matched |= CompareAndClear(cellA, (int)SubSlotIndex.BottomLeft,
-                cellB, (int)SubSlotIndex.BottomRight, gridSystem, destroyedBlocks,
-                ref cellAChanged, ref cellBChanged);
+            OnSubBlockMatched?.Invoke(matchedSubBlock, sourceBlock);
         }
-        else if (difference == Vector2Int.up)
+
+        foreach (JellyBlockBase matchedSubBlock in neighborMatches)
         {
-            matched |= CompareAndClear(cellA, (int)SubSlotIndex.TopLeft,
-                cellB, (int)SubSlotIndex.BottomLeft, gridSystem, destroyedBlocks,
-                ref cellAChanged, ref cellBChanged);
-            matched |= CompareAndClear(cellA, (int)SubSlotIndex.TopRight,
-                cellB, (int)SubSlotIndex.BottomRight, gridSystem, destroyedBlocks,
-                ref cellAChanged, ref cellBChanged);
-        }
-        else if (difference == Vector2Int.down)
-        {
-            matched |= CompareAndClear(cellA, (int)SubSlotIndex.BottomLeft,
-                cellB, (int)SubSlotIndex.TopLeft, gridSystem, destroyedBlocks,
-                ref cellAChanged, ref cellBChanged);
-            matched |= CompareAndClear(cellA, (int)SubSlotIndex.BottomRight,
-                cellB, (int)SubSlotIndex.TopRight, gridSystem, destroyedBlocks,
-                ref cellAChanged, ref cellBChanged);
+            OnSubBlockMatched?.Invoke(matchedSubBlock, neighborBlock);
         }
 
-        return matched;
-    }
+        sourceBlock.RemoveSubBlocks(sourceMatches);
+        neighborBlock.RemoveSubBlocks(neighborMatches);
+        OnBlockMatched?.Invoke(sourceBlock);
+        OnBlockMatched?.Invoke(neighborBlock);
 
-    /// <summary>
-    /// So sánh màu của một cặp slot đối ứng rồi xóa cả hai nếu cùng màu.
-    /// </summary>
-    private static bool CompareAndClear(
-        Cell cellA,
-        int slotA,
-        Cell cellB,
-        int slotB,
-        GridSystem gridSystem,
-        HashSet<JellyBlockBase> destroyedBlocks,
-        ref bool cellAChanged,
-        ref bool cellBChanged)
-    {
-        if (cellA == null || cellB == null) return false;
-
-        JellyBlockBase blockA = cellA.GetBlockAt(slotA);
-        JellyBlockBase blockB = cellB.GetBlockAt(slotB);
-        if (blockA == null || blockB == null) return false;
-
-        if (blockA.GetColorAt(slotA) != blockB.GetColorAt(slotB)) return false;
-
-        // Đọc thông tin trước khi clear vì ClearSlot làm mất reference trong
-        // Cell, trong khi visual callback vẫn cần biết block vừa bị tác động.
-        cellA.ClearSlot(slotA);
-        cellB.ClearSlot(slotB);
-        cellAChanged = true;
-        cellBChanged = true;
-
-        OnSubBlockCleared?.Invoke(blockA, cellA, slotA);
-        OnSubBlockCleared?.Invoke(blockB, cellB, slotB);
-
-        DestroyIfNoLongerOnGrid(blockA, gridSystem, destroyedBlocks);
-        DestroyIfNoLongerOnGrid(blockB, gridSystem, destroyedBlocks);
+        EnqueueAffectedArea(gridSystem, sourceCell, positionsToCheck, queuedPositions);
+        EnqueueAffectedArea(gridSystem, neighborCell, positionsToCheck, queuedPositions);
         return true;
-    }
-
-    /// <summary>
-    /// Phát thông báo restructure cho từng block còn sống trong Cell.
-    /// Thứ tự slot được duyệt theo chiều dọc trước, sau đó chiều ngang.
-    /// </summary>
-    private static void RestructureCell(Cell cell)
-    {
-        if (cell == null) return;
-
-        int[] verticalFirstOrder =
-        {
-            (int)SubSlotIndex.TopLeft,
-            (int)SubSlotIndex.BottomLeft,
-            (int)SubSlotIndex.TopRight,
-            (int)SubSlotIndex.BottomRight
-        };
-
-        Dictionary<JellyBlockBase, List<int>> blockSlots =
-            new Dictionary<JellyBlockBase, List<int>>();
-
-        foreach (int slot in verticalFirstOrder)
-        {
-            JellyBlockBase block = cell.GetBlockAt(slot);
-            if (block == null) continue;
-
-            if (!blockSlots.TryGetValue(block, out List<int> slots))
-            {
-                slots = new List<int>();
-                blockSlots.Add(block, slots);
-            }
-
-            slots.Add(slot);
-        }
-
-        foreach (KeyValuePair<JellyBlockBase, List<int>> entry in blockSlots)
-        {
-            if (entry.Key == null) continue;
-
-            entry.Key.PlayJiggle();
-            OnBlockExpanded?.Invoke(entry.Key, cell, entry.Value.AsReadOnly());
-        }
-    }
-
-    private static void DestroyIfNoLongerOnGrid(
-        JellyBlockBase block,
-        GridSystem gridSystem,
-        HashSet<JellyBlockBase> destroyedBlocks)
-    {
-        if (block == null || destroyedBlocks.Contains(block)) return;
-
-        // Một JellyBlock có thể chiếm nhiều slot, vì vậy chỉ destroy khi nó
-        // không còn được Cell nào tham chiếu.
-        if (IsBlockStillOnGrid(block, gridSystem)) return;
-
-        destroyedBlocks.Add(block);
-        OnBlockDestroyed?.Invoke(block);
-        UnityEngine.Object.Destroy(block.gameObject);
-    }
-
-    private static bool IsBlockStillOnGrid(JellyBlockBase targetBlock, GridSystem gridSystem)
-    {
-        if (targetBlock == null || gridSystem == null) return false;
-
-        foreach (Cell cell in gridSystem.GetAllCells())
-        {
-            if (cell == null) continue;
-
-            for (int slot = 0; slot < 4; slot++)
-            {
-                if (cell.GetBlockAt(slot) == targetBlock) return true;
-            }
-        }
-
-        return false;
     }
 
     private static void EnqueueAffectedArea(
         GridSystem gridSystem,
         Cell cell,
-        Queue<Cell> cellsToCheck,
-        HashSet<Cell> queuedCells)
+        Queue<Vector2Int> positionsToCheck,
+        HashSet<Vector2Int> queuedPositions)
     {
         if (cell == null) return;
-
-        EnqueueCell(cell, cellsToCheck, queuedCells);
-        EnqueueNeighbors(gridSystem, cell, cellsToCheck, queuedCells);
-    }
-
-    private static void EnqueueNeighbors(
-        GridSystem gridSystem,
-        Cell cell,
-        Queue<Cell> cellsToCheck,
-        HashSet<Cell> queuedCells)
-    {
-        if (gridSystem == null || cell == null) return;
+        EnqueuePosition(cell.GridPosition, positionsToCheck, queuedPositions);
 
         foreach (Cell neighbor in gridSystem.GetNeighbors(cell.GridPosition))
         {
-            EnqueueCell(neighbor, cellsToCheck, queuedCells);
+            if (neighbor != null)
+            {
+                EnqueuePosition(neighbor.GridPosition, positionsToCheck, queuedPositions);
+            }
         }
     }
 
-    private static void EnqueueCell(
-        Cell cell,
-        Queue<Cell> cellsToCheck,
-        HashSet<Cell> queuedCells)
+    private static void EnqueuePosition(
+        Vector2Int position,
+        Queue<Vector2Int> positionsToCheck,
+        HashSet<Vector2Int> queuedPositions)
     {
-        if (cell == null || queuedCells.Contains(cell)) return;
-
-        queuedCells.Add(cell);
-        cellsToCheck.Enqueue(cell);
+        if (queuedPositions.Add(position))
+        {
+            positionsToCheck.Enqueue(position);
+        }
     }
 }

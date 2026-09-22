@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.25, y: 0.5, z: -0.25}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.5, y: 1, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5482174230217116261}
@@ -68,7 +68,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: ee1b1b153927adb4194bd6c1e8d9a65f, type: 2}
+  - {fileID: 2100000, guid: 78c59b568db7f744099993999d24206f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -125,11 +125,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1dcec59ff7346f4b8ddc9e308a8b194, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JellySingleBlock
-  color: 0
+  color: 1
   material: {fileID: 2100000, guid: 78c59b568db7f744099993999d24206f, type: 2}
   blockScale: {x: 0.5, y: 1, z: 0.5}
-  jiggleDuration: 0.18
-  jiggleStrength: 0.08
 --- !u!1 &482799436166104378
 GameObject:
   m_ObjectHideFlags: 0
@@ -160,7 +158,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.25, y: 0.5, z: 0.25}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.5, y: 1, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5482174230217116261}
@@ -198,7 +196,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: ee1b1b153927adb4194bd6c1e8d9a65f, type: 2}
+  - {fileID: 2100000, guid: 3f7e9f2bd0aabc54eb40c926141dc40f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -255,11 +253,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1dcec59ff7346f4b8ddc9e308a8b194, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JellySingleBlock
-  color: 0
+  color: 3
   material: {fileID: 2100000, guid: 3f7e9f2bd0aabc54eb40c926141dc40f, type: 2}
   blockScale: {x: 0.5, y: 1, z: 0.5}
-  jiggleDuration: 0.18
-  jiggleStrength: 0.08
 --- !u!1 &3338888055505483010
 GameObject:
   m_ObjectHideFlags: 0
@@ -290,7 +286,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.25, y: 0.5, z: 0.25}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.5, y: 1, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5482174230217116261}
@@ -388,8 +384,6 @@ MonoBehaviour:
   color: 0
   material: {fileID: 2100000, guid: ee1b1b153927adb4194bd6c1e8d9a65f, type: 2}
   blockScale: {x: 0.5, y: 1, z: 0.5}
-  jiggleDuration: 0.18
-  jiggleStrength: 0.08
 --- !u!1 &4923047215208017400
 GameObject:
   m_ObjectHideFlags: 0
@@ -420,7 +414,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.25, y: 0.5, z: -0.25}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.5, y: 1, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5482174230217116261}
@@ -458,7 +452,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: ee1b1b153927adb4194bd6c1e8d9a65f, type: 2}
+  - {fileID: 2100000, guid: a75edac506259b044934d53ba8c7c994, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -515,11 +509,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1dcec59ff7346f4b8ddc9e308a8b194, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JellySingleBlock
-  color: 0
+  color: 2
   material: {fileID: 2100000, guid: a75edac506259b044934d53ba8c7c994, type: 2}
   blockScale: {x: 0.5, y: 1, z: 0.5}
-  jiggleDuration: 0.18
-  jiggleStrength: 0.08
 --- !u!1 &8805890340940736078
 GameObject:
   m_ObjectHideFlags: 0
@@ -532,7 +524,7 @@ GameObject:
   - component: {fileID: 8680741384616627100}
   - component: {fileID: 1235194788267269182}
   m_Layer: 8
-  m_Name: Block_Double_Red
+  m_Name: Block_Four_Sigle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -600,6 +592,3 @@ MonoBehaviour:
   returnDuration: 0.32
   snapEase: 27
   returnEase: 30
-  jiggleDuration: 0.2
-  jiggleStrength: 0.1
-  jiggleVibrato: 8

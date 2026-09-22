@@ -7,6 +7,6 @@ public class JellyFullBlock : JellyBlockBase
     protected override void Awake()
     {
         base.Awake();
-        SetScale(Vector3.one);
+        SetScale(new Vector3(1,0.5f,1));
     }
 }

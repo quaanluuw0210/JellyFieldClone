@@ -127,7 +127,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::JellyFullBlock
   color: 0
   material: {fileID: 0}
-  blockScale: {x: 1, y: 1, z: 1}
+  blockScale: {x: 1, y: 0.5, z: 1}
   jiggleDuration: 0.18
   jiggleStrength: 0.08
 --- !u!1 &8899516770398214533
@@ -207,6 +207,3 @@ MonoBehaviour:
   returnDuration: 0.32
   snapEase: 27
   returnEase: 30
-  jiggleDuration: 0.2
-  jiggleStrength: 0.1
-  jiggleVibrato: 8

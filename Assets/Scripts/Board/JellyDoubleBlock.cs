@@ -1,11 +1,9 @@
-using UnityEngine;
-
+﻿using UnityEngine;
 public enum JellyDoubleOrientation
 {
     Horizontal,
-    Vertical
+    Vertical    
 }
-
 public class JellyDoubleBlock : JellyBlockBase
 {
     [SerializeField] private JellyDoubleOrientation orientation = JellyDoubleOrientation.Horizontal;
@@ -15,9 +13,22 @@ public class JellyDoubleBlock : JellyBlockBase
 
     protected override void Awake()
     {
+       
         base.Awake();
-        SetScale(orientation == JellyDoubleOrientation.Horizontal
-            ? new Vector3(1f, 0.5f, 0.5f)
-            : new Vector3(0.5f, 0.5f, 1f));
+
+        
+    }
+
+   
+    private void OnValidate()
+    {
+        if (!Application.isPlaying)
+        {
+            Vector3 targetScale = orientation == JellyDoubleOrientation.Horizontal
+                ? new Vector3(1f, 0.5f, 0.5f)
+                : new Vector3(0.5f, 0.5f, 1f);
+
+            SetScale(targetScale);
+        }
     }
 }

@@ -207,7 +207,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0.42261827, y: 0, z: 0, w: 0.9063079}
-  m_LocalPosition: {x: 0, y: 22, z: -12}
+  m_LocalPosition: {x: 2, y: 22, z: -16}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -540,6 +540,7 @@ GameObject:
   - component: {fileID: 1107045569}
   - component: {fileID: 1107045571}
   - component: {fileID: 1107045570}
+  - component: {fileID: 1107045573}
   m_Layer: 0
   m_Name: _GameController
   m_TagString: Untagged
@@ -575,7 +576,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   gridSystem: {fileID: 1107045569}
   boardView: {fileID: 1107045571}
-  inputController: {fileID: 0}
+  inputController: {fileID: 1107045573}
 --- !u!114 &1107045571
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -591,7 +592,7 @@ MonoBehaviour:
   gridSystem: {fileID: 1107045569}
   cellPrefab: {fileID: 1822025829048321520, guid: 3195c3b9ec57e6148a49d3551ac5ceb1, type: 3}
   blockPrefab: {fileID: 1235194788267269182, guid: 1eece88d0fbcdcf46a744c17fdbc1111, type: 3}
-  centerBoard: 1
+  blockPrefab2: {fileID: 5635659580456211390, guid: 2634ada285796bf42bbfeef011604fed, type: 3}
   runHardcodedTestOnStart: 1
 --- !u!4 &1107045572
 Transform:
@@ -602,12 +603,29 @@ Transform:
   m_GameObject: {fileID: 1107045568}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.36858, y: 10.90895, z: -2.46808}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1107045573
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1107045568}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c850ec99f1e99b94f8970d7da310602d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InputController
+  mainCamera: {fileID: 330585545}
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  gridSystem: {fileID: 1107045569}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

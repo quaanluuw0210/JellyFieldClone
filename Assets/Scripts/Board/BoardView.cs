@@ -14,9 +14,9 @@ public class BoardView : MonoBehaviour
     [Header("Prefabs")]
     [SerializeField] private GameObject cellPrefab;
     [SerializeField] private Block blockPrefab;
+    [SerializeField] private Block blockPrefab2;
 
-    [Header("Layout")]
-    [SerializeField] private bool centerBoard = true;
+
 
     [Header("Startup Test")]
     [SerializeField] private bool runHardcodedTestOnStart;
@@ -55,12 +55,11 @@ public class BoardView : MonoBehaviour
 
         if (gridSystem == null || cellPrefab == null) return;
 
-        Vector3 centerOffset = GetBoardCenterOffset();
         foreach (Cell cell in gridSystem.GetAllCells())
         {
             if (cell == null) continue;
 
-            Vector3 worldPosition = GetWorldPositionForCell(cell.GridPosition, centerOffset);
+            Vector3 worldPosition = GetWorldPositionForCell(cell.GridPosition);
             GameObject cellView = Instantiate(cellPrefab, worldPosition, Quaternion.identity, transform);
             cellView.name = string.Format("Cell_{0}_{1}", cell.GridPosition.x, cell.GridPosition.y);
             cellViews[cell.GridPosition] = cellView;
@@ -76,44 +75,56 @@ public class BoardView : MonoBehaviour
         if (gridSystem == null || blockPrefab == null) return null;
         if (!gridSystem.IsValidPosition(gridPos)) return null;
 
-        Vector3 spawnPosition = GetWorldPositionForCell(gridPos, GetBoardCenterOffset());
+        Cell cell = gridSystem.GetCell(gridPos);
+        if (cell == null || cell.HasBlock()) return null;
+
+        Vector3 spawnPosition = GetWorldPositionForCell(gridPos);
         spawnPosition += Vector3.up * 0.1f;
 
         Block blockView = Instantiate(blockPrefab, spawnPosition, Quaternion.identity, transform);
-        blockView.SetBoardWorldOffset(GetBoardCenterOffset());
         blockView.name = string.Format("Block_{0}_{1}", gridPos.x, gridPos.y);
+
+        blockView.InitializePlacedState(cell);
+
+        GameManager gameManager = FindFirstObjectByType<GameManager>();
+        if (gameManager != null)
+        {
+            blockView.OnBlockDropped += gameManager.HandleBlockDropped;
+        }
+
         blockViews.Add(blockView);
-        blockView.PlayJiggleAnimation();
         return blockView;
     }
 
-    /// <summary>
-    /// Tính offset đưa tâm của bounding box lưới về vị trí BoardView.
-    /// Cách tính theo bounds giúp hoạt động đúng với lưới khuyết hoặc tọa độ
-    /// bắt đầu từ giá trị khác 0.
-    /// </summary>
-    public Vector3 GetBoardCenterOffset()
+    public Block SpawnBlock2At(Vector2Int gridPos)
     {
-        if (gridSystem == null || !centerBoard) return Vector3.zero;
+        if (gridSystem == null || blockPrefab2 == null) return null;
+        if (!gridSystem.IsValidPosition(gridPos)) return null;
 
-        if (!TryGetGridBounds(out Vector2Int minPosition, out Vector2Int maxPosition))
+        Cell cell = gridSystem.GetCell(gridPos);
+        if (cell == null || cell.HasBlock()) return null;
+
+        Vector3 spawnPosition = GetWorldPositionForCell(gridPos);
+        spawnPosition += Vector3.up * 0.1f;
+
+        Block blockView = Instantiate(blockPrefab2, spawnPosition, Quaternion.identity, transform);
+        blockView.name = string.Format("Block_{0}_{1}", gridPos.x, gridPos.y);
+
+        blockView.InitializePlacedState(cell);
+
+        GameManager gameManager = FindFirstObjectByType<GameManager>();
+        if (gameManager != null)
         {
-            return Vector3.zero;
+            blockView.OnBlockDropped += gameManager.HandleBlockDropped;
         }
 
-        Vector3 minWorld = gridSystem.GetWorldPosition(minPosition);
-        Vector3 maxWorld = gridSystem.GetWorldPosition(maxPosition);
-        Vector3 boardCenter = (minWorld + maxWorld) * 0.5f;
-        return transform.position - boardCenter;
+        blockViews.Add(blockView);
+        return blockView;
     }
 
-    /// <summary>
-    /// Chuyển tọa độ Grid sang World và áp dụng offset căn giữa BoardView.
-    /// </summary>
-    public Vector3 GetWorldPositionForCell(Vector2Int gridPos, Vector3 centerOffset)
+    public Vector3 GetWorldPositionForCell(Vector2Int gridPos)
     {
-        if (gridSystem == null) return transform.position;
-        return gridSystem.GetWorldPosition(gridPos) + centerOffset;
+        return gridSystem.GetWorldPosition(gridPos);
     }
 
     /// <summary>
@@ -151,6 +162,7 @@ public class BoardView : MonoBehaviour
         gridSystem.InitializeRectangularGrid(5, 5);
         GenerateBoardVisuals();
         SpawnBlockAt(new Vector2Int(2, 2));
+        SpawnBlock2At(new Vector2Int(4, 2));
     }
 
     private bool TryGetGridBounds(out Vector2Int minPosition, out Vector2Int maxPosition)

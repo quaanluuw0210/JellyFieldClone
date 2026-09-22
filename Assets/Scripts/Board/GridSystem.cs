@@ -92,12 +92,15 @@ public class GridSystem : MonoBehaviour
         return originPosition + new Vector3(gridPosition.x * cellSize, 0, gridPosition.y * cellSize);
     }
 
-    // Chuyển đổi Tọa độ Thế giới sang Tọa độ Grid
+    
     public Vector2Int GetGridPosition(Vector3 worldPosition)
     {
         Vector3 localPos = worldPosition - originPosition;
-        int x = Mathf.RoundToInt(localPos.x / cellSize);
-        int y = Mathf.RoundToInt(localPos.z / cellSize);
+
+        // Cộng cellSize * 0.5f để tâm nhận diện nằm chính giữa lòng ô thay vì ở mép ô
+        int x = Mathf.FloorToInt((localPos.x + cellSize * 0.5f) / cellSize);
+        int y = Mathf.FloorToInt((localPos.z + cellSize * 0.5f) / cellSize);
+
         return new Vector2Int(x, y);
     }
 
@@ -105,5 +108,35 @@ public class GridSystem : MonoBehaviour
     public IEnumerable<Cell> GetAllCells()
     {
         return gridMap.Values;
+    }
+
+    /// <summary>
+    /// Gán dữ liệu Block vào Cell tại vị trí chỉ định
+    /// </summary>
+    public bool PlaceBlock(Block block, Vector2Int gridPosition)
+    {
+        Cell cell = GetCell(gridPosition);
+        if (cell == null)
+        {
+            Debug.LogWarning($"[GridSystem] Không tìm thấy Cell tại vị trí {gridPosition}");
+            return false;
+        }
+
+        // Giả sử class Cell của bạn có phương thức nhận Block hoặc điền các Slot
+        // Ví dụ: Đặt block vào các sub-slot tương ứng trong Cell
+        block.InitializePlacedState(cell);
+
+        return true;
+    }
+    private void OnDrawGizmos()
+    {
+        if (gridMap == null) return;
+
+        Gizmos.color = Color.green;
+        foreach (var cell in gridMap.Keys)
+        {
+            Vector3 worldPos = GetWorldPosition(cell);
+            Gizmos.DrawWireCube(worldPos, new Vector3(cellSize * 0.9f, 0.1f, cellSize * 0.9f));
+        }
     }
 }
