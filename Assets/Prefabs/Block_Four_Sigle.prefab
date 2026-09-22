@@ -591,6 +591,7 @@ GameObject:
   - component: {fileID: 5482174230217116261}
   - component: {fileID: 8680741384616627100}
   - component: {fileID: 1235194788267269182}
+  - component: {fileID: 681811250389847229}
   m_Layer: 8
   m_Name: Block_Four_Sigle
   m_TagString: Untagged
@@ -651,6 +652,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Block
   gridSystem: {fileID: 0}
+  spreadManager: {fileID: 0}
   subBlocks: []
   dragHeight: 0.35
   pickupHeight: 0.15
@@ -660,3 +662,16 @@ MonoBehaviour:
   returnDuration: 0.32
   snapEase: 27
   returnEase: 30
+--- !u!114 &681811250389847229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8805890340940736078}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 709c772650cd7964185b680f3dfb678c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BlockSpreadManager
+  preferredDirection: 0

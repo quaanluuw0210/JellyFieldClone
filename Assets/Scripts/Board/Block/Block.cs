@@ -10,6 +10,7 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
 {
     [Header("References")]
     [SerializeField] private GridSystem gridSystem;
+    [SerializeField] private BlockSpreadManager spreadManager;
 
     [SerializeField] private List<JellyBlockBase> subBlocks = new List<JellyBlockBase>();
 
@@ -76,6 +77,9 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
 
         if (gridSystem == null)
             gridSystem = FindFirstObjectByType<GridSystem>();
+
+        if (spreadManager == null)
+            spreadManager = GetComponent<BlockSpreadManager>();
     }
 
     private void Start()
@@ -360,7 +364,23 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
 
     public void RecoverShape()
     {
-        Debug.Log(string.Format("[Block {0}] Executing shape recovery/refill...", name), this);
+        if (spreadManager == null)
+            spreadManager = GetComponent<BlockSpreadManager>();
+
+        if (spreadManager == null)
+        {
+            Debug.LogWarning($"[Block {name}] Không tìm thấy BlockSpreadManager trên cùng GameObject.", this);
+            return;
+        }
+
+        // Nhận danh sách subBlocks mới đã được dãn lấp đầy từ Manager
+        List<JellyBlockBase> recoveredSubBlocks = spreadManager.RecoverShape(subBlocks);
+
+        if (recoveredSubBlocks != null && recoveredSubBlocks.Count > 0)
+        {
+            subBlocks.Clear();
+            subBlocks.AddRange(recoveredSubBlocks);
+        }
     }
 
     private bool TryGetLocalBounds(JellyBlockBase subBlock, out Bounds localBounds)

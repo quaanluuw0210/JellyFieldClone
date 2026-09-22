@@ -528,6 +528,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1017040749
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1017040751}
+  - component: {fileID: 1017040750}
+  m_Layer: 0
+  m_Name: JellyFactory
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1017040750
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1017040749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eaf255dbd7ffe3f489433969a1c39a49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JellyFactory
+  jellyDoublePrefab: {fileID: 3232163994364097153, guid: f4d260eaaf26d9a42adbc382da2c30aa, type: 3}
+  jellyFullPrefab: {fileID: 7042875320273391949, guid: e54d51783abeb6e40b256a2d743de8c2, type: 3}
+--- !u!4 &1017040751
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1017040749}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1107045568
 GameObject:
   m_ObjectHideFlags: 0
@@ -592,7 +638,7 @@ MonoBehaviour:
   gridSystem: {fileID: 1107045569}
   cellPrefab: {fileID: 1822025829048321520, guid: 3195c3b9ec57e6148a49d3551ac5ceb1, type: 3}
   blockPrefab: {fileID: 1235194788267269182, guid: 1eece88d0fbcdcf46a744c17fdbc1111, type: 3}
-  blockPrefab2: {fileID: 5635659580456211390, guid: 2634ada285796bf42bbfeef011604fed, type: 3}
+  blockPrefab2: {fileID: 5085520754908721666, guid: 45ccacaf2a7b69f4382fdb0ee3811b31, type: 3}
   runHardcodedTestOnStart: 1
 --- !u!4 &1107045572
 Transform:
@@ -635,3 +681,4 @@ SceneRoots:
   - {fileID: 832575519}
   - {fileID: 1107045572}
   - {fileID: 967200806}
+  - {fileID: 1017040751}
