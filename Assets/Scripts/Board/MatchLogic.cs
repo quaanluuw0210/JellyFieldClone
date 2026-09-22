@@ -87,14 +87,9 @@ public static class MatchLogic
             {
                 if (sourceSubBlock == null || neighborSubBlock == null) continue;
 
-                // --- THÊM DEBUG LOG Ở ĐÂY ---
-                Debug.Log($"[MatchCheck] Hướng: {direction} | " +
-                          $"Source ({sourceCell.GridPosition}): {sourceSubBlock.name} [Color: {sourceSubBlock.Color}] VS " +
-                          $"Neighbor ({neighborCell.GridPosition}): {neighborSubBlock.name} [Color: {neighborSubBlock.Color}]");
-
+             
                 if (sourceSubBlock.Color != neighborSubBlock.Color)
                 {
-                    Debug.Log($"---> Không khớp màu ({sourceSubBlock.Color} != {neighborSubBlock.Color})");
                     continue;
                 }
 
@@ -104,11 +99,11 @@ public static class MatchLogic
                     neighborSubBlock,
                     direction))
                 {
-                    Debug.Log($"---> Cùng màu nhưng KHÔNG căn chỉnh khớp vị trí cạnh!");
+                   
                     continue;
                 }
 
-                Debug.Log($"===> KHỚP MÀU VÀ VỊ TRÍ: {sourceSubBlock.Color}!");
+              
 
                 if (!sourceMatches.Contains(sourceSubBlock)) sourceMatches.Add(sourceSubBlock);
                 if (!neighborMatches.Contains(neighborSubBlock)) neighborMatches.Add(neighborSubBlock);

@@ -85,6 +85,7 @@ public class BoardView : MonoBehaviour
         blockView.name = string.Format("Block_{0}_{1}", gridPos.x, gridPos.y);
 
         blockView.InitializePlacedState(cell);
+        blockView.SetPlaced(true);
 
         GameManager gameManager = FindFirstObjectByType<GameManager>();
         if (gameManager != null)
@@ -111,6 +112,7 @@ public class BoardView : MonoBehaviour
         blockView.name = string.Format("Block_{0}_{1}", gridPos.x, gridPos.y);
 
         blockView.InitializePlacedState(cell);
+        blockView.SetPlaced(true);
 
         GameManager gameManager = FindFirstObjectByType<GameManager>();
         if (gameManager != null)

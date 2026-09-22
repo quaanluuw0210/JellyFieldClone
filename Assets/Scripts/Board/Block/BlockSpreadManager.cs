@@ -11,7 +11,7 @@ public class BlockSpreadManager : MonoBehaviour
 {
     [Header("Settings")]
     [SerializeField] private SpreadDirection preferredDirection = SpreadDirection.Horizontal;
-
+   
 
     private readonly JellyBlockBase[,] gridSlots = new JellyBlockBase[2, 2];
 
@@ -20,43 +20,197 @@ public class BlockSpreadManager : MonoBehaviour
         ClearGrid();
         RegisterAll(livingSubBlocks);
 
-        // Gọi log kiểm tra
-        FindEmptySlot(livingSubBlocks);
-        FindSpreadedJellyBlock();
+        List<JellyBlockBase> result = new List<JellyBlockBase>(CopyValidBlocks(livingSubBlocks));
 
+        int maxIterations = 10;
+        int step = 0;
 
-        SimulateSpreadSteps(livingSubBlocks);
+        while (step < maxIterations)
+        {
+            int emptySlots = FindEmptySlot(livingSubBlocks);
+            if (emptySlots == 0) break;
 
-        // Trả về danh sách tạm thời (chưa xử lý dãn)
-        return CopyValidBlocks(livingSubBlocks);
+            bool expanded = TryExpandSingleToDouble(result)
+                          || (emptySlots == 2 && TryExpandDoubleToFull(result));
+
+            if (!expanded) break;
+            step++;
+        }
+
+        return result;
     }
 
-    /// <summary>
-    /// Tìm và Log ra các vị trí ô trống (1: [0,0], 2: [0,1], 3: [1,0], 4: [1,1])
-    /// </summary>
+    // --- EXPAND: SINGLE -> DOUBLE ---
+    private bool TryExpandSingleToDouble(List<JellyBlockBase> blocks)
+    {
+        for (int x = 0; x < 2; x++)
+        {
+            for (int y = 0; y < 2; y++)
+            {
+                if (gridSlots[x, y] is JellySingleBlock single && single != null)
+                {
+                    foreach (Vector2Int dir in GetPriorityDirections())
+                    {
+                        Vector2Int target = new Vector2Int(x, y) + dir;
+                        if (IsValidSlot(target.x, target.y) && gridSlots[target.x, target.y] == null)
+                        {
+
+
+                            bool isHorizontal = dir.x != 0;
+
+                            // 1. TÍNH VỊ TRÍ MIDPOINT CHUẨN ĐỂ ĐẶT KHỐI DOUBLE
+                            Vector3 midLocalPos = GetMidSlotLocalPosition(x, y, target.x, target.y);
+                            midLocalPos.y += 0.25f; // Offset Y nếu có
+
+                            JellyColor color = single.Color;
+                            Material mat = JellyFactory.Instance.GetMaterialForColor(color);
+                            JellyType type = isHorizontal ? JellyType.DoubleHorizontal : JellyType.DoubleVertical;
+
+                            Transform parentTransform = single.transform.parent;
+                            Vector3 midWorldPos = parentTransform != null
+                                ? parentTransform.TransformPoint(midLocalPos)
+                                : transform.TransformPoint(midLocalPos);
+
+                        
+
+                            JellyBlockBase newDouble = JellyFactory.Instance.CreateJelly(
+                            type,
+                            midWorldPos,
+                            single.transform.rotation,
+                            parentTransform != null ? parentTransform : transform);
+
+                            newDouble.SetMaterial(JellyFactory.Instance.GetMaterialForColor(single.Color));
+
+                            newDouble.transform.localPosition = midLocalPos;
+                            newDouble.SetMaterial(JellyFactory.Instance.GetMaterialForColor(color));
+
+                            blocks.Remove(single);
+                            blocks.Add(newDouble);
+                            gridSlots[x, y] = newDouble;
+                            gridSlots[target.x, target.y] = newDouble;
+
+                  
+                            if (single.SpreadAnim != null)
+                            {
+                                single.SpreadAnim.MorphSingleToDouble(single, newDouble, new Vector2Int(x, y), target);
+                            }
+                            else
+                            {
+                                Destroy(single.gameObject);
+                            }
+
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    // --- EXPAND: DOUBLE -> FULL ---
+    private bool TryExpandDoubleToFull(List<JellyBlockBase> blocks)
+    {
+        HashSet<JellyBlockBase> checkedBlocks = new HashSet<JellyBlockBase>();
+
+        for (int x = 0; x < 2; x++)
+        {
+            for (int y = 0; y < 2; y++)
+            {
+                if (gridSlots[x, y] is JellyDoubleBlock doubleBlock && checkedBlocks.Add(doubleBlock))
+                {
+                    List<int> occupiedSlots = GetSlotsForBlock(doubleBlock);
+                    if (occupiedSlots.Count != 2) continue;
+
+                    JellyColor color = doubleBlock.Color;
+                    Material mat = JellyFactory.Instance.GetMaterialForColor(color);
+                    Vector3 centerLocalPos = Vector3.zero;
+                    centerLocalPos.y += 0.25f;
+                    JellyBlockBase newFull = JellyFactory.Instance.CreateJelly(
+                        JellyType.Full,
+                        transform.TransformPoint(centerLocalPos),
+                        transform.rotation,
+                        transform);
+
+                    if (newFull == null) return false;
+
+                    newFull.transform.localPosition = centerLocalPos;
+                    newFull.SetMaterial(mat);
+
+                    blocks.Remove(doubleBlock);
+                    Destroy(doubleBlock.gameObject);
+                    blocks.Add(newFull);
+
+                    for (int sx = 0; sx < 2; sx++)
+                        for (int sy = 0; sy < 2; sy++)
+                            gridSlots[sx, sy] = newFull;
+
+                    Debug.Log($"[Spread] Double '{doubleBlock.name}' -> Full (lấp đầy 4 ô)");
+
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // --- HÀM PHỤ TRỢ CHO SPREAD ---
+    private IEnumerable<Vector2Int> GetPriorityDirections()
+    {
+        if (preferredDirection == SpreadDirection.Horizontal)
+        {
+            yield return new Vector2Int(1, 0);
+            yield return new Vector2Int(-1, 0);
+            yield return new Vector2Int(0, 1);
+            yield return new Vector2Int(0, -1);
+        }
+        else
+        {
+            yield return new Vector2Int(0, 1);
+            yield return new Vector2Int(0, -1);
+            yield return new Vector2Int(1, 0);
+            yield return new Vector2Int(-1, 0);
+        }
+    }
+
+    private static bool IsValidSlot(int x, int y)
+    {
+        return x >= 0 && x < 2 && y >= 0 && y < 2;
+    }
+
+    private Vector3 GetSlotLocalPosition(int x, int y)
+    {
+        // Khớp với convention trong GetNearestSlot: x=0→-0.25, x=1→0.25 ; y=0→+0.25(z), y=1→-0.25(z)
+        float px = x == 0 ? -0.25f : 0.25f;
+        float pz = y == 0 ? 0.25f : -0.25f;
+        return new Vector3(px, 0f, pz);
+    }
+
+    private Vector3 GetMidSlotLocalPosition(int x1, int y1, int x2, int y2)
+    {
+        Vector3 pos1 = GetSlotLocalPosition(x1, y1);
+        Vector3 pos2 = GetSlotLocalPosition(x2, y2);
+        return (pos1 + pos2) * 0.5f;
+    }
+
+    // --- LOG / ĐẾM (giữ nguyên từ code cũ) ---
+
     public int FindEmptySlot(IReadOnlyList<JellyBlockBase> livingSubBlocks)
     {
         int emptyCount = 0;
-
         for (int x = 0; x < 2; x++)
         {
             for (int y = 0; y < 2; y++)
             {
                 if (gridSlots[x, y] == null)
                 {
-                    int slotIndex = GetSlotIndex(x, y);
-                    Debug.Log($"[FindEmptySlot] Ô trống tại Vị trí {slotIndex} -> gridSlots[{x},{y}]");
                     emptyCount++;
                 }
             }
         }
-
         return emptyCount;
     }
 
-    /// <summary>
-    /// Log ra vị trí và thông tin của các khối Jelly đang chiếm giữ trong Grid
-    /// </summary>
     public int FindSpreadedJellyBlock()
     {
         HashSet<JellyBlockBase> loggedBlocks = new HashSet<JellyBlockBase>();
@@ -79,8 +233,6 @@ public class BlockSpreadManager : MonoBehaviour
                     {
                         bool isHorizontal = doubleBlock.BlockScale.x >= doubleBlock.BlockScale.z;
                         string orientation = isHorizontal ? "Ngang" : "Dọc";
-
-                        // Tìm 2 ô mà Double Block này đang chiếm
                         List<int> slots = GetSlotsForBlock(jelly);
                         Debug.Log($"[FindSpreadedJellyBlock] Double Block ({orientation}) '{jelly.name}' đang chiếm các Vị trí: {string.Join(", ", slots)}");
                     }
@@ -91,11 +243,10 @@ public class BlockSpreadManager : MonoBehaviour
                 }
             }
         }
-
         return count;
     }
 
-    // --- CÁC HÀM BỔ TRỢ ĐÃ CHUẨN HÓA THEO TRỤC X (-0.25 / 0.25) VÀ Z (0.25 / -0.25) ---
+    // --- REGISTER / GRID STATE (giữ nguyên từ code cũ) ---
 
     private void RegisterAll(IReadOnlyList<JellyBlockBase> blocks)
     {
@@ -117,17 +268,15 @@ public class BlockSpreadManager : MonoBehaviour
 
                 if (isHorizontal)
                 {
-                    // Ngang: pos.z > 0 là Hàng trên (y=0, ô 1 & 3), pos.z < 0 là Hàng dưới (y=1, ô 2 & 4)
                     int y = pos.z >= 0f ? 0 : 1;
-                    gridSlots[0, y] = jelly; // Trái
-                    gridSlots[1, y] = jelly; // Phải
+                    gridSlots[0, y] = jelly;
+                    gridSlots[1, y] = jelly;
                 }
                 else
                 {
-                    // Dọc: pos.x < 0 là Cột trái (x=0, ô 1 & 2), pos.x > 0 là Cột phải (x=1, ô 3 & 4)
                     int x = pos.x >= 0f ? 1 : 0;
-                    gridSlots[x, 0] = jelly; // Trên
-                    gridSlots[x, 1] = jelly; // Dưới
+                    gridSlots[x, 0] = jelly;
+                    gridSlots[x, 1] = jelly;
                 }
             }
             else // JellySingleBlock
@@ -140,20 +289,11 @@ public class BlockSpreadManager : MonoBehaviour
 
     private Vector2Int GetNearestSlot(Vector3 localPos)
     {
-        // x < 0 là bên trái (x=0), x >= 0 là bên phải (x=1)
         int x = localPos.x >= 0f ? 1 : 0;
-        // z >= 0 là hàng trên (y=0), z < 0 là hàng dưới (y=1)
         int y = localPos.z >= 0f ? 0 : 1;
         return new Vector2Int(x, y);
     }
 
-    /// <summary>
-    /// Chuyển đổi [x,y] sang số thứ tự 1, 2, 3, 4 theo quy ước:
-    /// [0,0] -> 1 (Top-Left)
-    /// [0,1] -> 2 (Bottom-Left)
-    /// [1,0] -> 3 (Top-Right)
-    /// [1,1] -> 4 (Bottom-Right)
-    /// </summary>
     private int GetSlotIndex(int x, int y)
     {
         if (x == 0 && y == 0) return 1;
@@ -196,164 +336,5 @@ public class BlockSpreadManager : MonoBehaviour
             if (j != null && unique.Add(j)) result.Add(j);
         }
         return result;
-    }
-
-
-
-    ///////////
-    ///
-
-    /// <summary>
-    /// Vòng lặp mô phỏng quá trình dãn (Spread) từng bước cho đến khi lấp đầy hoặc không thể dãn tiếp.
-    /// Hàm chỉ Log ra các bước dự kiến, KHÔNG thay đổi dữ liệu thật hay khởi tạo GameObject.
-    /// </summary>
-    public void SimulateSpreadSteps(IReadOnlyList<JellyBlockBase> livingSubBlocks)
-    {
-        // 1. Khởi tạo mảng giả lập để mô phỏng
-        JellyBlockBase[,] simGrid = new JellyBlockBase[2, 2];
-        ClearGrid();
-        RegisterAll(livingSubBlocks);
-
-        // Copy dữ liệu hiện tại từ gridSlots sang simGrid
-        for (int x = 0; x < 2; x++)
-            for (int y = 0; y < 2; y++)
-                simGrid[x, y] = gridSlots[x, y];
-
-        int step = 1;
-        int maxIterations = 10; // Giới hạn chống lặp vô tận
-
-        Debug.Log("=== BẮT ĐẦU MÔ PHỎNG TIẾN TRÌNH LAN (SPREAD SIMULATION) ===");
-
-        while (step <= maxIterations)
-        {
-            int emptySlots = CountSimEmptySlots(simGrid);
-            Debug.Log($"--- [Bước {step}] Ô trống còn lại: {emptySlots}/4 ---");
-
-            if (emptySlots == 0)
-            {
-                Debug.Log($"[Bước {step}] -> Khung đã ĐẦY (4/4 ô). Kết thúc mô phỏng!");
-                break;
-            }
-
-            bool expandedInThisStep = false;
-
-            // --- ƯU TIÊN 1: Tìm Single Block có ô trống kế bên để dãn thành Double ---
-            for (int x = 0; x < 2 && !expandedInThisStep; x++)
-            {
-                for (int y = 0; y < 2 && !expandedInThisStep; y++)
-                {
-                    JellyBlockBase block = simGrid[x, y];
-                    if (block is JellySingleBlock)
-                    {
-                        Vector2Int sourcePos = new Vector2Int(x, y);
-
-                        foreach (Vector2Int dir in GetPriorityDirections())
-                        {
-                            Vector2Int targetPos = sourcePos + dir;
-
-                            if (IsValidSlot(targetPos.x, targetPos.y) && simGrid[targetPos.x, targetPos.y] == null)
-                            {
-                                int fromSlot = GetSlotIndex(sourcePos.x, sourcePos.y);
-                                int toSlot = GetSlotIndex(targetPos.x, targetPos.y);
-
-                                Debug.Log($"[Mô phỏng Bước {step}] CHỌN LAN: Single Block '{block.name}' tại Vị trí {fromSlot} [{sourcePos.x},{sourcePos.y}] " +
-                                          $"---> Dãn sang Vị trí {toSlot} [{targetPos.x},{targetPos.y}] (Trở thành Double Block)");
-
-                                // Cập nhật ma trận mô phỏng
-                                simGrid[targetPos.x, targetPos.y] = block;
-                                expandedInThisStep = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // --- ƯU TIÊN 2: Nếu không có Single dãn được, tìm Double Block để dãn thành Full (khi có 2 ô trống) ---
-            if (!expandedInThisStep && emptySlots == 2)
-            {
-                for (int x = 0; x < 2 && !expandedInThisStep; x++)
-                {
-                    for (int y = 0; y < 2 && !expandedInThisStep; y++)
-                    {
-                        JellyBlockBase block = simGrid[x, y];
-                        if (block is JellyDoubleBlock)
-                        {
-                            List<int> currentSlots = GetSimSlotsForBlock(simGrid, block);
-                            Debug.Log($"[Mô phỏng Bước {step}] CHỌN LAN: Double Block '{block.name}' đang ở các Vị trí {string.Join(", ", currentSlots)} " +
-                                      $"---> Dãn lấp đầy toàn bộ 4 ô (Trở thành Full Block)");
-
-                            // Đánh dấu lấp đầy toàn bộ ma trận mô phỏng
-                            for (int sx = 0; sx < 2; sx++)
-                                for (int sy = 0; sy < 2; sy++)
-                                    simGrid[sx, sy] = block;
-
-                            expandedInThisStep = true;
-                        }
-                    }
-                }
-            }
-
-            // Nếu không có khối nào thỏa điều kiện dãn thêm
-            if (!expandedInThisStep)
-            {
-                Debug.Log($"[Bước {step}] -> Không còn khối nào có thể lan tiếp. Dừng mô phỏng!");
-                break;
-            }
-
-            step++;
-        }
-
-        Debug.Log("=== KẾT THÚC MÔ PHỎNG LAN ===");
-    }
-
-    // --- CÁC HÀM BỔ TRỢ MÔ PHỎNG ---
-
-    private IEnumerable<Vector2Int> GetPriorityDirections()
-    {
-        if (preferredDirection == SpreadDirection.Horizontal)
-        {
-            yield return new Vector2Int(1, 0);  // Phải
-            yield return new Vector2Int(-1, 0); // Trái
-            yield return new Vector2Int(0, 1);  // Dưới
-            yield return new Vector2Int(0, -1); // Trên
-        }
-        else
-        {
-            yield return new Vector2Int(0, 1);  // Dưới
-            yield return new Vector2Int(0, -1); // Trên
-            yield return new Vector2Int(1, 0);  // Phải
-            yield return new Vector2Int(-1, 0); // Trái
-        }
-    }
-
-    private int CountSimEmptySlots(JellyBlockBase[,] simGrid)
-    {
-        int count = 0;
-        for (int x = 0; x < 2; x++)
-            for (int y = 0; y < 2; y++)
-                if (simGrid[x, y] == null) count++;
-        return count;
-    }
-
-    private List<int> GetSimSlotsForBlock(JellyBlockBase[,] simGrid, JellyBlockBase target)
-    {
-        List<int> slots = new List<int>();
-        for (int x = 0; x < 2; x++)
-        {
-            for (int y = 0; y < 2; y++)
-            {
-                if (simGrid[x, y] == target)
-                {
-                    slots.Add(GetSlotIndex(x, y));
-                }
-            }
-        }
-        return slots;
-    }
-
-    private static bool IsValidSlot(int x, int y)
-    {
-        return x >= 0 && x < 2 && y >= 0 && y < 2;
     }
 }

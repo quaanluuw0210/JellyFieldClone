@@ -43,10 +43,4 @@ public class InputController : MonoBehaviour
        
     }
 
-    // SỬA TRONG InputController.cs:
-    private Vector2Int ConvertWorldToGridPosition(Vector3 worldPos)
-    {
-        // Dùng chính hàm quy đổi của GridSystem
-        return gridSystem.GetGridPosition(worldPos);
-    }
 }

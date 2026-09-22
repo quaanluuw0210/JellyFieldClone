@@ -31,7 +31,7 @@ Transform:
   m_GameObject: {fileID: 8139815334777378967}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.5, z: 0}
+  m_LocalPosition: {x: 0, y: 0.25, z: 0}
   m_LocalScale: {x: 1, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -130,6 +130,7 @@ MonoBehaviour:
   color: 0
   material: {fileID: 0}
   blockScale: {x: 1, y: 0.5, z: 1}
+  spreadAnim: {fileID: 0}
 --- !u!54 &8023041573463935273
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -244,9 +245,8 @@ MonoBehaviour:
   gridSystem: {fileID: 0}
   spreadManager: {fileID: 0}
   subBlocks: []
-  dragHeight: 0.35
-  pickupHeight: 0.15
-  pickupScale: 1.08
+  dragHeight: 0.75
+  pickupHeight: 0.7
   dragSmoothTime: 0.04
   snapDuration: 0.22
   returnDuration: 0.32
@@ -265,4 +265,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BlockSpreadManager
   preferredDirection: 0
-  localCellSize: 0.5

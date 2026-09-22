@@ -119,6 +119,56 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &1623217
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1623219}
+  - component: {fileID: 1623218}
+  m_Layer: 0
+  m_Name: SpawnView
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1623218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1623217}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47771f8d0b0468f43b5f7a19f2b0b4a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpawnView
+  slotSpacing: 1.5
+  cellPrefab: {fileID: 1822025829048321520, guid: 3195c3b9ec57e6148a49d3551ac5ceb1, type: 3}
+  runHardcodedTestOnStart: 1
+  testBlockPrefabs:
+  - {fileID: 5635659580456211390, guid: 2634ada285796bf42bbfeef011604fed, type: 3}
+  - {fileID: 5085520754908721666, guid: 45ccacaf2a7b69f4382fdb0ee3811b31, type: 3}
+--- !u!4 &1623219
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1623217}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2, y: 0, z: -5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -182,7 +232,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 3
+  orthographic size: 6
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -207,7 +257,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0.42261827, y: 0, z: 0, w: 0.9063079}
-  m_LocalPosition: {x: 2, y: 22, z: -16}
+  m_LocalPosition: {x: 2, y: 20, z: -16}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -308,7 +358,7 @@ Light:
   m_InnerSpotAngle: 21.80208
   m_CookieSize2D: {x: 10, y: 10}
   m_Shadows:
-    m_Type: 2
+    m_Type: 0
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
@@ -345,7 +395,7 @@ Light:
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1
-  m_ColorTemperature: 5000
+  m_ColorTemperature: 13883
   m_UseColorTemperature: 1
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
@@ -557,8 +607,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eaf255dbd7ffe3f489433969a1c39a49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JellyFactory
-  jellyDoublePrefab: {fileID: 3232163994364097153, guid: f4d260eaaf26d9a42adbc382da2c30aa, type: 3}
+  jellyDoubleHorizontalPrefab: {fileID: 3079924125623878972, guid: 5f624507489ff2b4f91e82edf1409093, type: 3}
+  jellyDoubleVerticalPrefab: {fileID: 1863546511443057052, guid: 1efbed858a6655d40ae67c57466b5d2d, type: 3}
   jellyFullPrefab: {fileID: 7042875320273391949, guid: e54d51783abeb6e40b256a2d743de8c2, type: 3}
+  colorMaterials:
+  - color: 0
+    material: {fileID: 2100000, guid: ee1b1b153927adb4194bd6c1e8d9a65f, type: 2}
+  - color: 3
+    material: {fileID: 2100000, guid: 3f7e9f2bd0aabc54eb40c926141dc40f, type: 2}
+  - color: 2
+    material: {fileID: 2100000, guid: a75edac506259b044934d53ba8c7c994, type: 2}
+  - color: 1
+    material: {fileID: 2100000, guid: a75edac506259b044934d53ba8c7c994, type: 2}
 --- !u!4 &1017040751
 Transform:
   m_ObjectHideFlags: 0
@@ -622,6 +682,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   gridSystem: {fileID: 1107045569}
   boardView: {fileID: 1107045571}
+  spawnView: {fileID: 1623218}
   inputController: {fileID: 1107045573}
 --- !u!114 &1107045571
 MonoBehaviour:
@@ -637,7 +698,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BoardView
   gridSystem: {fileID: 1107045569}
   cellPrefab: {fileID: 1822025829048321520, guid: 3195c3b9ec57e6148a49d3551ac5ceb1, type: 3}
-  blockPrefab: {fileID: 1235194788267269182, guid: 1eece88d0fbcdcf46a744c17fdbc1111, type: 3}
+  blockPrefab: {fileID: 5467744977075159571, guid: cc38271705e53074e940d3b4fcd7529f, type: 3}
   blockPrefab2: {fileID: 5085520754908721666, guid: 45ccacaf2a7b69f4382fdb0ee3811b31, type: 3}
   runHardcodedTestOnStart: 1
 --- !u!4 &1107045572
@@ -672,6 +733,51 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   gridSystem: {fileID: 1107045569}
+--- !u!1 &1917723293
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1917723295}
+  - component: {fileID: 1917723294}
+  m_Layer: 0
+  m_Name: JellySpreadAnim
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1917723294
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1917723293}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aad5ce11d88d27642a06cd7c57b6816b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JellySpreadAnim
+  morpVFX: {fileID: 0}
+--- !u!4 &1917723295
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1917723293}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.17312, y: 1.6, z: 1.55788}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -682,3 +788,5 @@ SceneRoots:
   - {fileID: 1107045572}
   - {fileID: 967200806}
   - {fileID: 1017040751}
+  - {fileID: 1917723295}
+  - {fileID: 1623219}

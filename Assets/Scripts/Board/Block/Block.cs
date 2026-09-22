@@ -15,9 +15,8 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
     [SerializeField] private List<JellyBlockBase> subBlocks = new List<JellyBlockBase>();
 
     [Header("Drag")]
-    [SerializeField] private float dragHeight = 0.35f;
-    [SerializeField] private float pickupHeight = 0.15f;
-    [SerializeField] private float pickupScale = 1.08f;
+    [SerializeField] private float dragHeight = 0.75f;
+    [SerializeField] private float pickupHeight = 0.7f;
     [SerializeField] private float dragSmoothTime = 0.04f;
 
     [Header("Drop")]
@@ -44,6 +43,13 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
 
     public IReadOnlyList<JellyBlockBase> SubBlocks => subBlocks;
     public bool IsDragging => isDragging;
+
+    private bool isPlaced = false; // Mặc định chưa đặt lên Board
+
+    public void SetPlaced(bool placed)
+    {
+        isPlaced = placed;
+    }
 
     public bool IsFullJelly
     {
@@ -92,6 +98,11 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
     {
         if (isDragging || gridSystem == null) return;
 
+        if(isPlaced)
+        {
+            return;
+        }    
+
         if (mainCamera == null) mainCamera = Camera.main;
 
         // Dừng animation cũ ngay lập tức
@@ -115,12 +126,17 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
 
         Vector3 liftedPosition = originalPosition + Vector3.up * pickupHeight;
         movementTween = transform.DOMove(liftedPosition, 0.12f).SetEase(Ease.OutQuad);
-        scaleTween = transform.DOScale(originalScale * pickupScale, 0.12f).SetEase(Ease.OutQuad);
+      
     }
 
     public void OnDrag(PointerEventData eventData)
     {
         if (!isDragging || mainCamera == null) return;
+
+        if (isPlaced)
+        {
+            return;
+        }
 
         Ray pointerRay = mainCamera.ScreenPointToRay(Input.mousePosition);
         if (!dragPlane.Raycast(pointerRay, out float distance)) return;
@@ -138,6 +154,11 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
     public void OnPointerUp(PointerEventData eventData)
     {
         if (!isDragging) return;
+
+        if (isPlaced)
+        {
+            return;
+        }
 
         isDragging = false;
         scaleTween?.Kill();
@@ -246,53 +267,6 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
 
         return touchingBlocks;
     }
-
-    ///// <summary>
-    ///// Kiểm tra hai Jelly ở hai Block kề nhau có thật sự đối diện trên cùng
-    ///// đoạn biên hay chỉ chạm cùng một cạnh nhưng lệch góc.
-    ///// </summary>
-    //public bool IsSubBlockAlignedAcrossEdge(
-    //    JellyBlockBase localSubBlock,
-    //    Block neighborBlock,
-    //    JellyBlockBase neighborSubBlock,
-    //    Vector2Int direction)
-    //{
-    //    if (localSubBlock == null || neighborBlock == null || neighborSubBlock == null)
-    //    {
-    //        return false;
-    //    }
-
-    //    if (!TryGetLocalBounds(localSubBlock, out Bounds localBounds) ||
-    //        !neighborBlock.TryGetLocalBounds(neighborSubBlock, out Bounds neighborBounds))
-    //    {
-    //        return false;
-    //    }
-
-    //    const float overlapTolerance = 0.001f;
-    //    if (direction == Vector2Int.left || direction == Vector2Int.right)
-    //    {
-    //        return localBounds.min.z <= neighborBounds.max.z + overlapTolerance &&
-    //               localBounds.max.z >= neighborBounds.min.z - overlapTolerance;
-    //    }
-
-    //    if (direction == Vector2Int.up || direction == Vector2Int.down)
-    //    {
-    //        return localBounds.min.x <= neighborBounds.max.x + overlapTolerance &&
-    //               localBounds.max.x >= neighborBounds.min.x - overlapTolerance;
-    //    }
-
-    //    return false;
-    //}
-
-    // Trong Block.cs
-
-    /// <summary>
-    /// Kiểm tra xem 2 SubBlock thuộc 2 Block lân cận có đối diện trực tiếp (thẳng hàng) với nhau qua cạnh tiếp xúc hay không.
-    /// </summary>
-    /// <summary>
-    /// Kiểm tra hai Jelly ở hai Block kề nhau có thật sự đối diện trên cùng
-    /// đoạn biên hay chỉ chạm cùng một cạnh nhưng lệch góc.
-    /// </summary>
     public bool IsSubBlockAlignedAcrossEdge(
         JellyBlockBase localSubBlock,
         Block neighborBlock,

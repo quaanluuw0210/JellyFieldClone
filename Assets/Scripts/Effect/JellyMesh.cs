@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class JellyMesh : MonoBehaviour
 {
@@ -6,28 +6,57 @@ public class JellyMesh : MonoBehaviour
     public float Mass = 1f;
     public float stiffness = 1f;
     public float damping = 0.75f;
+
     private Mesh OriginalMesh, MeshClone;
-    private MeshRenderer renderer;
+    private MeshRenderer meshRenderer;
     private JellyVertex[] jv;
-    private Vector3[] vertexArray; 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private Vector3[] vertexArray;
+
     void Start()
     {
-        OriginalMesh = GetComponent<MeshFilter>().sharedMesh;
-        MeshClone=Instantiate(OriginalMesh);
-        GetComponent<MeshFilter>().sharedMesh=MeshClone;
-        renderer = GetComponent<MeshRenderer>();
-        jv=new JellyVertex[MeshClone.vertices.Length];
-        for(int i=0;i<MeshClone.vertices.Length;i++)
+        MeshFilter meshFilter = GetComponent<MeshFilter>();
+        OriginalMesh = meshFilter.sharedMesh;
+
+        // Nhân bản Mesh để không làm ảnh hưởng tới Prefab gốc
+        MeshClone = Instantiate(OriginalMesh);
+        meshFilter.sharedMesh = MeshClone;
+        meshRenderer = GetComponent<MeshRenderer>();
+
+        // Khởi tạo các đỉnh biến dạng
+        jv = new JellyVertex[MeshClone.vertices.Length];
+        for (int i = 0; i < MeshClone.vertices.Length; i++)
         {
             jv[i] = new JellyVertex(i, transform.TransformPoint(MeshClone.vertices[i]));
-        }    
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    private void FixedUpdate()
     {
-        
+        if (OriginalMesh == null || jv == null) return;
+
+        vertexArray = OriginalMesh.vertices;
+        Bounds bounds = meshRenderer.bounds; // Lấy bounds hiện tại
+
+        for (int i = 0; i < jv.Length; i++)
+        {
+            Vector3 target = transform.TransformPoint(vertexArray[jv[i].ID]);
+
+            // Tính độ ảnh hưởng biến dạng dựa trên độ cao Y
+            float intensity = (1f - (bounds.max.y - target.y) / bounds.size.y) * Intensity;
+
+            // Cập nhật vị trí đỉnh theo vật lý lò xo
+            jv[i].Shake(target, Mass, stiffness, damping);
+
+            Vector3 localPos = transform.InverseTransformPoint(jv[i].Position);
+            vertexArray[jv[i].ID] = Vector3.Lerp(vertexArray[jv[i].ID], localPos, intensity);
+        }
+
+        // Gán lại đỉnh cho Mesh
+        MeshClone.vertices = vertexArray;
+
+        // BẮT BUỘC: Tính lại ánh sáng và viền bóng cho các góc bo tròn khi rung rinh
+        MeshClone.RecalculateNormals();
+        MeshClone.RecalculateBounds();
     }
 
     public class JellyVertex
@@ -36,35 +65,22 @@ public class JellyMesh : MonoBehaviour
         public Vector3 Position;
         public Vector3 Velocity, Force;
 
-        public JellyVertex(int _id,Vector3 _pos)
+        public JellyVertex(int _id, Vector3 _pos)
         {
             ID = _id;
             Position = _pos;
         }
+
         public void Shake(Vector3 target, float m, float s, float d)
         {
             Force = (target - Position) * s;
-            Velocity=(Velocity + Force/m) * d;
+            Velocity = (Velocity + Force / m) * d;
             Position += Velocity;
-            if((Velocity+Force+Force/m).magnitude<0.001f)
+
+            if ((Velocity + Force / m).magnitude < 0.001f)
             {
                 Position = target;
-            }    
+            }
         }
     }
-    private void FixedUpdate()
-    {
-        vertexArray = OriginalMesh.vertices;
-        for (int i = 0; i < jv.Length; i++)
-        {
-            Vector3 target=transform.TransformPoint(vertexArray[jv[i].ID]);
-            float intensity = (1 - (renderer.bounds.max.y - target.y) / renderer.bounds.size.y) * Intensity;
-            jv[i].Shake(target, Mass, stiffness, damping);
-            target = transform.InverseTransformPoint(jv[i].Position);
-            vertexArray[jv[i].ID] = Vector3.Lerp(vertexArray[jv[i].ID],target,intensity);
-        }
-        MeshClone.vertices = vertexArray;
-    }
-
-    
 }

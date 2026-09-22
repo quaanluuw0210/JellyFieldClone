@@ -1,61 +1,78 @@
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public enum JellyType
 {
-    Double,
+    DoubleHorizontal,
+    DoubleVertical,
     Full
 }
+
+[System.Serializable]
+public class JellyColorMaterial
+{
+    public JellyColor color;
+    public Material material;
+}
+
 public class JellyFactory : MonoBehaviour
 {
-
     public static JellyFactory Instance;
 
-    [SerializeField] private GameObject jellyDoublePrefab;
+    [SerializeField] private GameObject jellyDoubleHorizontalPrefab;
+    [SerializeField] private GameObject jellyDoubleVerticalPrefab;
     [SerializeField] private GameObject jellyFullPrefab;
+
+    [Header("Color Materials")]
+    [SerializeField] private List<JellyColorMaterial> colorMaterials;
+
+    private Dictionary<JellyColor, Material> materialLookup;
 
     private void Awake()
     {
-        if(Instance == null)
-        Instance = this;
-        else
-        {
-            Destroy(this.gameObject);
-        }    
+        if (Instance == null) Instance = this;
+        else { Destroy(gameObject); return; }
 
-    }
-    public JellyBlockBase CreateJelly(JellyType type, Vector3 position = default, Quaternion rotation = default, Transform parent = null)
-    {
-        GameObject prefabToInstantiate = null;
-
-        switch (type)
+        materialLookup = new Dictionary<JellyColor, Material>();
+        foreach (var entry in colorMaterials)
         {
-            case JellyType.Double:
-                prefabToInstantiate = jellyDoublePrefab;
-                break;
-            case JellyType.Full:
-                prefabToInstantiate = jellyFullPrefab;
-                break;
-            default:
-                Debug.LogError($"[JellyFactory] JellyType {type} ch?a ???c h? tr?!");
-                return null;
+            if (entry.material != null)
+                materialLookup[entry.color] = entry.material;
         }
+    }
+
+    public Material GetMaterialForColor(JellyColor color)
+    {
+        if (materialLookup.TryGetValue(color, out Material mat))
+            return mat;
+
+        Debug.LogWarning($"[JellyFactory] Không tìm thấy Material cho màu {color}!");
+        return null;
+    }
+
+    public JellyBlockBase CreateJelly(JellyType type, Vector3 position, Quaternion rotation, Transform parent)
+    {
+        GameObject prefabToInstantiate = type switch
+        {
+            JellyType.DoubleHorizontal => jellyDoubleHorizontalPrefab,
+            JellyType.DoubleVertical => jellyDoubleVerticalPrefab,
+            JellyType.Full => jellyFullPrefab,
+            _ => null
+        };
 
         if (prefabToInstantiate == null)
         {
-            Debug.LogError($"[JellyFactory] Prefab cho lo?i {type} ch?a ???c g�n trong Inspector!");
+            Debug.LogError($"[JellyFactory] Prefab cho loại {type} chưa được gán trong Inspector!");
             return null;
         }
 
-        // T?o GameObject m?i t? Prefab
         GameObject jellyObj = Instantiate(prefabToInstantiate, position, rotation, parent);
 
-        // L?y Component JellyBlockBase tr�n Prefab v?a t?o
         if (jellyObj.TryGetComponent<JellyBlockBase>(out var jellyBlock))
-        {
             return jellyBlock;
-        }
 
-        Debug.LogError($"[JellyFactory] Prefab {prefabToInstantiate.name} kh�ng ch?a component JellyBlockBase!");
+        Debug.LogError($"[JellyFactory] Prefab {prefabToInstantiate.name} không chứa component JellyBlockBase!");
+        Destroy(jellyObj);
         return null;
     }
 }
