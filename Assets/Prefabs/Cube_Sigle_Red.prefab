@@ -131,7 +131,7 @@ MonoBehaviour:
   color: 0
   material: {fileID: 0}
   blockScale: {x: 1, y: 0.5, z: 1}
-  spreadAnim: {fileID: 0}
+  spreadAnim: {fileID: 830198351330964449}
 --- !u!54 &9186012084948466592
 Rigidbody:
   m_ObjectHideFlags: 0

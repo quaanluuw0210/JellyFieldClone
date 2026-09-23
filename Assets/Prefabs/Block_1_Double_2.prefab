@@ -80,6 +80,7 @@ MonoBehaviour:
   returnDuration: 0.32
   snapEase: 27
   returnEase: 30
+  morpVFX: {fileID: 6392319658486080311, guid: c514b85e4ef509c4e96c9a495f00e489, type: 3}
 --- !u!114 &7588123271342162360
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -224,7 +225,7 @@ MonoBehaviour:
   color: 1
   material: {fileID: 2100000, guid: 78c59b568db7f744099993999d24206f, type: 2}
   blockScale: {x: 1, y: 0.5, z: 0.5}
-  spreadAnim: {fileID: 0}
+  spreadAnim: {fileID: 8024800616111969512}
   orientation: 0
 --- !u!54 &492118380712427395
 Rigidbody:
@@ -281,7 +282,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aad5ce11d88d27642a06cd7c57b6816b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JellySpreadAnim
-  morpVFX: {fileID: 0}
 --- !u!1 &2715989210672300595
 GameObject:
   m_ObjectHideFlags: 0
@@ -412,7 +412,7 @@ MonoBehaviour:
   color: 3
   material: {fileID: 2100000, guid: 3f7e9f2bd0aabc54eb40c926141dc40f, type: 2}
   blockScale: {x: 0.5, y: 1, z: 0.5}
-  spreadAnim: {fileID: 0}
+  spreadAnim: {fileID: 5088338337732088412}
 --- !u!114 &2748371388326269042
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -441,7 +441,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aad5ce11d88d27642a06cd7c57b6816b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JellySpreadAnim
-  morpVFX: {fileID: 0}
 --- !u!1 &4506933729540889185
 GameObject:
   m_ObjectHideFlags: 0
@@ -572,7 +571,7 @@ MonoBehaviour:
   color: 2
   material: {fileID: 2100000, guid: a75edac506259b044934d53ba8c7c994, type: 2}
   blockScale: {x: 0.5, y: 1, z: 0.5}
-  spreadAnim: {fileID: 0}
+  spreadAnim: {fileID: 5088338337732088412}
 --- !u!114 &6982699658716038900
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -601,4 +600,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aad5ce11d88d27642a06cd7c57b6816b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JellySpreadAnim
-  morpVFX: {fileID: 0}

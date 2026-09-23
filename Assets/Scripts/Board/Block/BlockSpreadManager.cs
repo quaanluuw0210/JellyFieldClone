@@ -1,5 +1,8 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public enum SpreadDirection
 {
@@ -11,11 +14,11 @@ public class BlockSpreadManager : MonoBehaviour
 {
     [Header("Settings")]
     [SerializeField] private SpreadDirection preferredDirection = SpreadDirection.Horizontal;
-   
+
 
     private readonly JellyBlockBase[,] gridSlots = new JellyBlockBase[2, 2];
 
-    public List<JellyBlockBase> RecoverShape(IReadOnlyList<JellyBlockBase> livingSubBlocks)
+    public IEnumerator RecoverShapeRoutine(List<JellyBlockBase> livingSubBlocks, Action<List<JellyBlockBase>> onAllComplete)
     {
         ClearGrid();
         RegisterAll(livingSubBlocks);
@@ -30,19 +33,48 @@ public class BlockSpreadManager : MonoBehaviour
             int emptySlots = FindEmptySlot(livingSubBlocks);
             if (emptySlots == 0) break;
 
-            bool expanded = TryExpandSingleToDouble(result)
-                          || (emptySlots == 2 && TryExpandDoubleToFull(result));
+            bool isStepFinished = false;
+            bool expanded = false;
+
+            if (TryExpandSingleToDouble(result, () => isStepFinished = true, out bool isAnimTriggered))
+            {
+
+                expanded = true;
+                if (isAnimTriggered)
+                {
+                    yield return new WaitUntil(() => isStepFinished);
+                    yield return new WaitForSeconds(0.05f);
+                }
+            }
+            else if (emptySlots == 2 && TryExpandDoubleToFull(result, () => isStepFinished = true, out isAnimTriggered))
+            {
+                expanded = true;
+                if (isAnimTriggered)
+                {
+                    yield return new WaitUntil(() => isStepFinished);
+                    yield return new WaitForSeconds(0.05f);
+                }
+            }
+
+
 
             if (!expanded) break;
             step++;
         }
-
-        return result;
+       
+        onAllComplete?.Invoke(result);
     }
 
+   
+
+
+
     // --- EXPAND: SINGLE -> DOUBLE ---
-    private bool TryExpandSingleToDouble(List<JellyBlockBase> blocks)
+    private bool TryExpandSingleToDouble(List<JellyBlockBase> blocks, Action onStepComplete, out bool animTriggered)
     {
+
+        animTriggered = false;
+
         for (int x = 0; x < 2; x++)
         {
             for (int y = 0; y < 2; y++)
@@ -92,7 +124,7 @@ public class BlockSpreadManager : MonoBehaviour
                   
                             if (single.SpreadAnim != null)
                             {
-                                single.SpreadAnim.MorphSingleToDouble(single, newDouble, new Vector2Int(x, y), target);
+                                single.SpreadAnim.MorphSingleToDouble(single, newDouble, new Vector2Int(x, y), target, onStepComplete);
                             }
                             else
                             {
@@ -109,10 +141,10 @@ public class BlockSpreadManager : MonoBehaviour
     }
 
     // --- EXPAND: DOUBLE -> FULL ---
-    private bool TryExpandDoubleToFull(List<JellyBlockBase> blocks)
+    private bool TryExpandDoubleToFull(List<JellyBlockBase> blocks, Action onStepComplete, out bool animTriggered)
     {
         HashSet<JellyBlockBase> checkedBlocks = new HashSet<JellyBlockBase>();
-
+        animTriggered = false;
         for (int x = 0; x < 2; x++)
         {
             for (int y = 0; y < 2; y++)
@@ -138,14 +170,23 @@ public class BlockSpreadManager : MonoBehaviour
                     newFull.SetMaterial(mat);
 
                     blocks.Remove(doubleBlock);
-                    Destroy(doubleBlock.gameObject);
+                    
+
                     blocks.Add(newFull);
 
                     for (int sx = 0; sx < 2; sx++)
                         for (int sy = 0; sy < 2; sy++)
                             gridSlots[sx, sy] = newFull;
 
-                    Debug.Log($"[Spread] Double '{doubleBlock.name}' -> Full (lấp đầy 4 ô)");
+
+                    if (doubleBlock.SpreadAnim != null)
+                    {
+                        doubleBlock.SpreadAnim.MorphDoubleToFull(doubleBlock,newFull, onStepComplete);
+                    }
+                    else
+                    {
+                        Destroy(doubleBlock.gameObject);
+                    }
 
                     return true;
                 }
@@ -211,40 +252,7 @@ public class BlockSpreadManager : MonoBehaviour
         return emptyCount;
     }
 
-    public int FindSpreadedJellyBlock()
-    {
-        HashSet<JellyBlockBase> loggedBlocks = new HashSet<JellyBlockBase>();
-        int count = 0;
-
-        for (int x = 0; x < 2; x++)
-        {
-            for (int y = 0; y < 2; y++)
-            {
-                JellyBlockBase jelly = gridSlots[x, y];
-                if (jelly != null && loggedBlocks.Add(jelly))
-                {
-                    count++;
-                    if (jelly is JellySingleBlock)
-                    {
-                        int slotIndex = GetSlotIndex(x, y);
-                        Debug.Log($"[FindSpreadedJellyBlock] Single Block '{jelly.name}' đang ở Vị trí {slotIndex} -> [{x},{y}]");
-                    }
-                    else if (jelly is JellyDoubleBlock doubleBlock)
-                    {
-                        bool isHorizontal = doubleBlock.BlockScale.x >= doubleBlock.BlockScale.z;
-                        string orientation = isHorizontal ? "Ngang" : "Dọc";
-                        List<int> slots = GetSlotsForBlock(jelly);
-                        Debug.Log($"[FindSpreadedJellyBlock] Double Block ({orientation}) '{jelly.name}' đang chiếm các Vị trí: {string.Join(", ", slots)}");
-                    }
-                    else if (jelly is JellyFullBlock)
-                    {
-                        Debug.Log($"[FindSpreadedJellyBlock] Full Block '{jelly.name}' đang chiếm toàn bộ 4 Vị trí (1, 2, 3, 4)");
-                    }
-                }
-            }
-        }
-        return count;
-    }
+   
 
     // --- REGISTER / GRID STATE (giữ nguyên từ code cũ) ---
 

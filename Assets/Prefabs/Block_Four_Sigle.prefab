@@ -130,7 +130,7 @@ MonoBehaviour:
   color: 1
   material: {fileID: 2100000, guid: 78c59b568db7f744099993999d24206f, type: 2}
   blockScale: {x: 0.5, y: 1, z: 0.5}
-  spreadAnim: {fileID: 0}
+  spreadAnim: {fileID: 7852733353402933613}
 --- !u!114 &3005752400279296537
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -159,7 +159,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aad5ce11d88d27642a06cd7c57b6816b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JellySpreadAnim
-  morpVFX: {fileID: 0}
 --- !u!1 &482799436166104378
 GameObject:
   m_ObjectHideFlags: 0
@@ -290,7 +289,7 @@ MonoBehaviour:
   color: 3
   material: {fileID: 2100000, guid: 3f7e9f2bd0aabc54eb40c926141dc40f, type: 2}
   blockScale: {x: 0.5, y: 1, z: 0.5}
-  spreadAnim: {fileID: 0}
+  spreadAnim: {fileID: 5376165444296636655}
 --- !u!114 &8346459178115404107
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -319,7 +318,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aad5ce11d88d27642a06cd7c57b6816b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JellySpreadAnim
-  morpVFX: {fileID: 0}
 --- !u!1 &3338888055505483010
 GameObject:
   m_ObjectHideFlags: 0
@@ -450,7 +448,7 @@ MonoBehaviour:
   color: 0
   material: {fileID: 2100000, guid: ee1b1b153927adb4194bd6c1e8d9a65f, type: 2}
   blockScale: {x: 0.5, y: 1, z: 0.5}
-  spreadAnim: {fileID: 0}
+  spreadAnim: {fileID: 861195165467456281}
 --- !u!114 &54970393977013453
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -479,7 +477,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aad5ce11d88d27642a06cd7c57b6816b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JellySpreadAnim
-  morpVFX: {fileID: 0}
 --- !u!1 &4923047215208017400
 GameObject:
   m_ObjectHideFlags: 0
@@ -610,7 +607,7 @@ MonoBehaviour:
   color: 2
   material: {fileID: 2100000, guid: a75edac506259b044934d53ba8c7c994, type: 2}
   blockScale: {x: 0.5, y: 1, z: 0.5}
-  spreadAnim: {fileID: 0}
+  spreadAnim: {fileID: 5796285482249805932}
 --- !u!114 &2876237245136630469
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -639,7 +636,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aad5ce11d88d27642a06cd7c57b6816b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JellySpreadAnim
-  morpVFX: {fileID: 0}
 --- !u!1 &8805890340940736078
 GameObject:
   m_ObjectHideFlags: 0
@@ -721,6 +717,7 @@ MonoBehaviour:
   returnDuration: 0.32
   snapEase: 27
   returnEase: 30
+  morpVFX: {fileID: 6392319658486080311, guid: c514b85e4ef509c4e96c9a495f00e489, type: 3}
 --- !u!114 &681811250389847229
 MonoBehaviour:
   m_ObjectHideFlags: 0

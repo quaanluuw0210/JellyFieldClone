@@ -1,6 +1,7 @@
 
 using DG.Tweening;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -25,6 +26,10 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
     [SerializeField] private Ease snapEase = Ease.OutBack;
     [SerializeField] private Ease returnEase = Ease.OutBounce;
 
+
+    [SerializeField] private GameObject morpVFX;
+
+
     public event Action<Block, Vector2Int> OnBlockDropped;
     public event Action<Block> OnBlockCleanedUp;
 
@@ -45,7 +50,34 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
     public bool IsDragging => isDragging;
 
     private bool isPlaced = false; // Mặc định chưa đặt lên Board
+    private bool isProcessingRemoval = false;
+    private readonly Queue<List<JellyBlockBase>> removalQueue = new Queue<List<JellyBlockBase>>();
+    public bool IsProcessingRemoval => isProcessingRemoval;
 
+    public void RemoveSubBlocks(List<JellyBlockBase> subBlocksToRemove)
+    {
+        if (subBlocksToRemove == null || subBlocksToRemove.Count == 0) return;
+
+        removalQueue.Enqueue(subBlocksToRemove);
+
+        if (!isProcessingRemoval)
+        {
+            StartCoroutine(ProcessRemovalQueue());
+        }
+    }
+
+    private IEnumerator ProcessRemovalQueue()
+    {
+        isProcessingRemoval = true;
+
+        while (removalQueue.Count > 0)
+        {
+            List<JellyBlockBase> batch = removalQueue.Dequeue();
+            yield return StartCoroutine(RemoveSubBlocksRoutine(batch));
+        }
+
+        isProcessingRemoval = false;
+    }
     public void SetPlaced(bool placed)
     {
         isPlaced = placed;
@@ -149,8 +181,33 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
             targetPosition,
             ref dragVelocity,
             dragSmoothTime);
+
+        UpdatePlacementPreview();
     }
 
+    private void UpdatePlacementPreview()
+    {
+        if (gridSystem == null) return;
+
+        // Tính tọa độ Grid dựa trên vị trí hiện tại của khối
+        Vector2Int hoverGridPos = gridSystem.GetGridPosition(transform.position - boardWorldOffset);
+
+        // Kiểm tra xem vị trí có hợp lệ & ô đó có đang TRỐNG hay không
+        if (gridSystem.IsValidPosition(hoverGridPos))
+        {
+            Cell cell = gridSystem.GetCell(hoverGridPos);
+            if (cell != null && !cell.HasBlock())
+            {
+                // Lấy vị trí World chuẩn của ô đó để đặt khung
+                Vector3 targetWorldPos = gridSystem.GetWorldPosition(hoverGridPos) + boardWorldOffset;
+                GridHighlightManager.Instance?.ShowHighlight(targetWorldPos);
+                return;
+            }
+        }
+
+        // Nếu kéo ra ngoài bàn cờ hoặc kéo đè lên ô đã có khối khác -> Ẩn khung
+        GridHighlightManager.Instance?.HideHighlight();
+    }
     public void OnPointerUp(PointerEventData eventData)
     {
         if (!isDragging) return;
@@ -159,6 +216,8 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
         {
             return;
         }
+
+        GridHighlightManager.Instance?.HideHighlight();
 
         isDragging = false;
         scaleTween?.Kill();
@@ -309,18 +368,34 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
 
         return false;
     }
-    public void RemoveSubBlocks(List<JellyBlockBase> subBlocksToRemove)
-    {
-        if (subBlocksToRemove == null || subBlocksToRemove.Count == 0) return;
 
+    private IEnumerator RemoveSubBlocksRoutine(List<JellyBlockBase> subBlocksToRemove)
+    {
         bool fullJellyMatched = IsFullJelly && subBlocksToRemove.Contains(subBlocks[0]);
         HashSet<JellyBlockBase> uniqueBlocks = new HashSet<JellyBlockBase>(subBlocksToRemove);
-
+       
+        List<Tween> fadeTweens = new List<Tween>();
         foreach (JellyBlockBase subBlock in uniqueBlocks)
         {
             if (subBlock == null) continue;
             subBlocks.Remove(subBlock);
-            Destroy(subBlock.gameObject);
+
+            Tween t = subBlock.transform.DOScale(Vector3.zero, 0.2f)
+                .SetEase(Ease.InBack)
+                .OnComplete(() =>
+                    {
+                        PlayMorphVFX(subBlock.transform.position, subBlock.Color.ToUnityColor());
+                        Destroy(subBlock.gameObject);
+                    }
+                );
+
+            fadeTweens.Add(t);
+        }
+
+       
+        foreach (var t in fadeTweens)
+        {
+            if (t.IsActive()) yield return t.WaitForCompletion();
         }
 
         if (fullJellyMatched || subBlocks.Count == 0)
@@ -330,30 +405,36 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
             OnBlockCleanedUp?.Invoke(this);
             OnBlockCleanedUp = null;
             Destroy(gameObject);
-            return;
+            yield break;
         }
 
-        RecoverShape();
+        yield return StartCoroutine(RecoverShapeCoroutine());
     }
 
-    public void RecoverShape()
+    private IEnumerator RecoverShapeCoroutine()
     {
         if (spreadManager == null)
             spreadManager = GetComponent<BlockSpreadManager>();
 
         if (spreadManager == null)
         {
-            Debug.LogWarning($"[Block {name}] Không tìm thấy BlockSpreadManager trên cùng GameObject.", this);
-            return;
+            Debug.LogWarning($"[Block {name}] Không tìm thấy BlockSpreadManager.", this);
+            yield break;
         }
 
-        // Nhận danh sách subBlocks mới đã được dãn lấp đầy từ Manager
-        List<JellyBlockBase> recoveredSubBlocks = spreadManager.RecoverShape(subBlocks);
+        List<JellyBlockBase> updated = null;
+        bool done = false;
 
-        if (recoveredSubBlocks != null && recoveredSubBlocks.Count > 0)
+        yield return StartCoroutine(spreadManager.RecoverShapeRoutine(subBlocks, (result) =>
+        {
+            updated = result;
+            done = true;
+        }));
+
+        if (updated != null && updated.Count > 0)
         {
             subBlocks.Clear();
-            subBlocks.AddRange(recoveredSubBlocks);
+            subBlocks.AddRange(updated);
         }
     }
 
@@ -425,5 +506,26 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
     {
         movementTween?.Kill();
         scaleTween?.Kill();
+    }
+
+    public void PlayMorphVFX(Vector3 worldPosition, Color color)
+    {
+        if (morpVFX == null) return;
+
+        GameObject vfxInstance = Instantiate(morpVFX, worldPosition, Quaternion.identity);
+
+        float destroyDelay = 1.5f;
+
+        if (vfxInstance.TryGetComponent<ParticleSystem>(out var ps))
+        {
+
+            var main = ps.main;
+            main.startColor = color;
+
+
+            destroyDelay = main.duration + main.startLifetime.constantMax;
+        }
+
+        Destroy(vfxInstance, destroyDelay);
     }
 }

@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 541911493106945974}
   - component: {fileID: 8646279268691286351}
   - component: {fileID: 8795198307474348106}
+  - component: {fileID: 5177609545224859704}
   m_Layer: 8
   m_Name: Cube_Double_Red
   m_TagString: Untagged
@@ -175,6 +176,18 @@ MonoBehaviour:
   Mass: 1
   stiffness: 1
   damping: 0.75
+--- !u!114 &5177609545224859704
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6319108590033811166}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aad5ce11d88d27642a06cd7c57b6816b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JellySpreadAnim
 --- !u!1 &7479716026966595279
 GameObject:
   m_ObjectHideFlags: 0
@@ -190,6 +203,7 @@ GameObject:
   - component: {fileID: 7408655146554778863}
   - component: {fileID: 4855354997258664591}
   - component: {fileID: 5625365168842127840}
+  - component: {fileID: 676677776022577524}
   m_Layer: 8
   m_Name: Cube_Double_Blue
   m_TagString: Untagged
@@ -350,6 +364,18 @@ MonoBehaviour:
   Mass: 1
   stiffness: 1
   damping: 0.75
+--- !u!114 &676677776022577524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7479716026966595279}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aad5ce11d88d27642a06cd7c57b6816b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JellySpreadAnim
 --- !u!1 &8084771339600217502
 GameObject:
   m_ObjectHideFlags: 0
@@ -429,6 +455,7 @@ MonoBehaviour:
   returnDuration: 0.32
   snapEase: 27
   returnEase: 30
+  morpVFX: {fileID: 6392319658486080311, guid: c514b85e4ef509c4e96c9a495f00e489, type: 3}
 --- !u!114 &2570756978750934713
 MonoBehaviour:
   m_ObjectHideFlags: 0

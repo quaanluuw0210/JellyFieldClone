@@ -2,30 +2,35 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Domain service cho match giữa các JellyBlockBase nằm trong hai Block.
-/// Block là container 1x1; JellyBlockBase mới là đơn vị màu được match.
-/// </summary>
 public static class MatchLogic
 {
     public static event Action<JellyBlockBase, Block> OnSubBlockMatched;
     public static event Action<Block> OnBlockMatched;
 
     /// <summary>
-    /// Horizontal được xử lý trước Vertical. Nếu cả hai trục có match ở cùng
-    /// lượt, chỉ match ngang được xóa; lượt quét tiếp theo xử lý chain dọc.
+    /// Xử lý match cho MỘT đợt (wave) bắt đầu từ 1 tập vị trí seed.
+    /// Không tự lặp chain bên trong nữa — chỉ quét các vị trí trong 'seedPositions'
+    /// (và các vị trí bị ảnh hưởng trực tiếp phát sinh trong CHÍNH wave này),
+    /// trả về danh sách Block bị ảnh hưởng để caller chờ animation xong rồi tự gọi lại cho wave kế tiếp.
     /// </summary>
-    public static bool ProcessMatchAndMerge(GridSystem gridSystem, Vector2Int placedPos)
+    public static bool ProcessMatchWave(
+        GridSystem gridSystem,
+        IEnumerable<Vector2Int> seedPositions,
+        out HashSet<Block> affectedBlocks,
+        out HashSet<Vector2Int> nextWaveSeeds)
     {
+        affectedBlocks = new HashSet<Block>();
+        nextWaveSeeds = new HashSet<Vector2Int>();
+        bool hasAnyMatch = false;
+
         if (gridSystem == null) return false;
 
-        Cell placedCell = gridSystem.GetCell(placedPos);
-        if (placedCell == null || !placedCell.HasBlock()) return false;
-
-        bool hasAnyMatch = false;
         Queue<Vector2Int> positionsToCheck = new Queue<Vector2Int>();
         HashSet<Vector2Int> queuedPositions = new HashSet<Vector2Int>();
-        EnqueuePosition(placedPos, positionsToCheck, queuedPositions);
+        foreach (var pos in seedPositions)
+        {
+            EnqueuePosition(pos, positionsToCheck, queuedPositions);
+        }
 
         while (positionsToCheck.Count > 0)
         {
@@ -35,26 +40,24 @@ public static class MatchLogic
             if (sourceCell == null || !sourceCell.HasBlock()) continue;
 
             bool horizontalMatch = ProcessDirection(
-                gridSystem, sourceCell, Vector2Int.left, positionsToCheck, queuedPositions);
+                gridSystem, sourceCell, Vector2Int.left, affectedBlocks, nextWaveSeeds);
             horizontalMatch |= ProcessDirection(
-                gridSystem, sourceCell, Vector2Int.right, positionsToCheck, queuedPositions);
+                gridSystem, sourceCell, Vector2Int.right, affectedBlocks, nextWaveSeeds);
 
             if (horizontalMatch)
             {
                 hasAnyMatch = true;
-                EnqueueAffectedArea(gridSystem, sourceCell, positionsToCheck, queuedPositions);
-                continue;
+                continue; // đã match ngang, KHÔNG check dọc thêm ở vị trí này trong cùng wave (giữ đúng rule cũ)
             }
 
             bool verticalMatch = ProcessDirection(
-                gridSystem, sourceCell, Vector2Int.down, positionsToCheck, queuedPositions);
+                gridSystem, sourceCell, Vector2Int.down, affectedBlocks, nextWaveSeeds);
             verticalMatch |= ProcessDirection(
-                gridSystem, sourceCell, Vector2Int.up, positionsToCheck, queuedPositions);
+                gridSystem, sourceCell, Vector2Int.up, affectedBlocks, nextWaveSeeds);
 
             if (verticalMatch)
             {
                 hasAnyMatch = true;
-                EnqueueAffectedArea(gridSystem, sourceCell, positionsToCheck, queuedPositions);
             }
         }
 
@@ -65,18 +68,19 @@ public static class MatchLogic
         GridSystem gridSystem,
         Cell sourceCell,
         Vector2Int direction,
-        Queue<Vector2Int> positionsToCheck,
-        HashSet<Vector2Int> queuedPositions)
+        HashSet<Block> affectedBlocks,
+        HashSet<Vector2Int> nextWaveSeeds)
     {
         Vector2Int neighborPosition = sourceCell.GridPosition + direction;
         Cell neighborCell = gridSystem.GetCell(neighborPosition);
-        if (neighborCell == null || !neighborCell.HasBlock()) return false;
+        if (neighborCell == null || !neighborCell.HasBlock() || sourceCell == null) return false;
 
         Block sourceBlock = sourceCell.Block;
         Block neighborBlock = neighborCell.Block;
         List<JellyBlockBase> sourceEdge = sourceBlock.GetSubBlocksTouchingEdge(direction);
         List<JellyBlockBase> neighborEdge = neighborBlock.GetSubBlocksTouchingEdge(-direction);
-        if (sourceEdge.Count == 0 || neighborEdge.Count == 0) return false;
+
+        if (sourceEdge == null || neighborEdge == null || sourceEdge.Count == 0 || neighborEdge.Count == 0) return false;
 
         List<JellyBlockBase> sourceMatches = new List<JellyBlockBase>();
         List<JellyBlockBase> neighborMatches = new List<JellyBlockBase>();
@@ -86,24 +90,13 @@ public static class MatchLogic
             foreach (JellyBlockBase neighborSubBlock in neighborEdge)
             {
                 if (sourceSubBlock == null || neighborSubBlock == null) continue;
-
-             
-                if (sourceSubBlock.Color != neighborSubBlock.Color)
-                {
-                    continue;
-                }
+                if (sourceSubBlock.Color != neighborSubBlock.Color) continue;
 
                 if (!sourceBlock.IsSubBlockAlignedAcrossEdge(
-                    sourceSubBlock,
-                    neighborBlock,
-                    neighborSubBlock,
-                    direction))
+                    sourceSubBlock, neighborBlock, neighborSubBlock, direction))
                 {
-                   
                     continue;
                 }
-
-              
 
                 if (!sourceMatches.Contains(sourceSubBlock)) sourceMatches.Add(sourceSubBlock);
                 if (!neighborMatches.Contains(neighborSubBlock)) neighborMatches.Add(neighborSubBlock);
@@ -114,39 +107,38 @@ public static class MatchLogic
         if (sourceMatches.Count == 0) return false;
 
         foreach (JellyBlockBase matchedSubBlock in sourceMatches)
-        {
             OnSubBlockMatched?.Invoke(matchedSubBlock, sourceBlock);
-        }
 
         foreach (JellyBlockBase matchedSubBlock in neighborMatches)
-        {
             OnSubBlockMatched?.Invoke(matchedSubBlock, neighborBlock);
-        }
 
         sourceBlock.RemoveSubBlocks(sourceMatches);
         neighborBlock.RemoveSubBlocks(neighborMatches);
         OnBlockMatched?.Invoke(sourceBlock);
         OnBlockMatched?.Invoke(neighborBlock);
 
-        EnqueueAffectedArea(gridSystem, sourceCell, positionsToCheck, queuedPositions);
-        EnqueueAffectedArea(gridSystem, neighborCell, positionsToCheck, queuedPositions);
+        // Ghi nhận block bị ảnh hưởng để caller chờ animation
+        affectedBlocks.Add(sourceBlock);
+        affectedBlocks.Add(neighborBlock);
+
+        // Ghi nhận vùng cần quét lại ở wave KẾ TIẾP (sau khi animation xong)
+        AddAffectedAreaSeeds(gridSystem, sourceCell, nextWaveSeeds);
+        AddAffectedAreaSeeds(gridSystem, neighborCell, nextWaveSeeds);
+
         return true;
     }
 
-    private static void EnqueueAffectedArea(
-        GridSystem gridSystem,
-        Cell cell,
-        Queue<Vector2Int> positionsToCheck,
-        HashSet<Vector2Int> queuedPositions)
+    private static void AddAffectedAreaSeeds(
+        GridSystem gridSystem, Cell cell, HashSet<Vector2Int> nextWaveSeeds)
     {
         if (cell == null) return;
-        EnqueuePosition(cell.GridPosition, positionsToCheck, queuedPositions);
+        nextWaveSeeds.Add(cell.GridPosition);
 
         foreach (Cell neighbor in gridSystem.GetNeighbors(cell.GridPosition))
         {
             if (neighbor != null)
             {
-                EnqueuePosition(neighbor.GridPosition, positionsToCheck, queuedPositions);
+                nextWaveSeeds.Add(neighbor.GridPosition);
             }
         }
     }

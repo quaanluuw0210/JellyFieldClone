@@ -4,87 +4,92 @@ using UnityEngine;
 
 public class JellySpreadAnim : MonoBehaviour
 {
-    [SerializeField] private GameObject morpVFX;
+   
+    private float effectDuration = 0.3f;
 
-    public void Awake()
-    {
-          
-    }
-    public void MorphSingleToFull(JellySingleBlock sourceSingle, Action<JellyBlockBase> onComplete = null)
-    {
-        Vector3 centrerpos = Vector3.zero;
-
-        Vector3 fullScale = Vector3.one;
-
-        Sequence seq = DOTween.Sequence();
-
-        seq.Join(sourceSingle.transform.DOMove(centrerpos, 0.18f).SetEase(Ease.InQuad));
-        seq.Join(sourceSingle.transform.DOScale(fullScale,0.18f).SetEase(Ease.InQuad));
-
-
-        seq.OnComplete(() =>
-        {
-            PlayMorphVFX(centrerpos);
-        });
-
-    }
     public void MorphSingleToDouble(
-      JellySingleBlock oldSingle, JellyBlockBase newDouble, Vector2Int sourceCoord, Vector2Int targetCoord)
+     JellySingleBlock oldSingle, JellyBlockBase newDouble, Vector2Int sourceCoord, Vector2Int targetCoord, Action onComplete)
     {
-        if (oldSingle == null) return;
+        if (oldSingle == null || oldSingle.gameObject == null)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        SetBlockVisualVisible(newDouble, false);
 
         bool isHorizontal = (sourceCoord.x != targetCoord.x);
 
-        // Tính scale dãn cho thằng cũ
         Vector3 stretchScale = oldSingle.transform.localScale;
-        if (isHorizontal) stretchScale.x *= 2f; else stretchScale.y *= 2f;
+        if (isHorizontal) stretchScale.x *= 2f; else stretchScale.z *= 2f;
 
-        // Thằng cũ dãn ra rồi biến mất, nhường lại khối newDouble đã nằm sẵn ở đó
+        // 1. Dừng mọi Tween cũ đang chạy trên oldSingle
         oldSingle.transform.DOKill();
-        oldSingle.transform.DOScale(stretchScale, 0.15f).OnComplete(() =>
-        {
-            Destroy(oldSingle.gameObject);
-        });
+
+        // 2. Chạy DOScale kèm SetLink -> Nếu oldSingle bị Destroy bất ngờ ở đâu đó, Tween tự ngắt ngay
+        oldSingle.transform.DOScale(stretchScale, effectDuration)
+            .SetEase(Ease.OutQuad)
+            .SetLink(oldSingle.gameObject, LinkBehaviour.KillOnDestroy)
+            .OnComplete(() =>
+            {
+                SetBlockVisualVisible(newDouble, true);
+                if (oldSingle != null && oldSingle.gameObject != null)
+                {
+                    Destroy(oldSingle.gameObject);
+                }
+                onComplete?.Invoke();
+            });
     }
+
     public void MorphDoubleToFull(
-    JellyDoubleBlock sourceDouble,
-    Action<JellyBlockBase> onComplete = null)
+        JellyDoubleBlock sourceDouble, JellyBlockBase newBlock, Action onComplete)
     {
-       
-        Vector3 currentPos = sourceDouble.transform.localPosition;
+        if (sourceDouble == null || sourceDouble.gameObject == null)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+        SetBlockVisualVisible (newBlock, false);
+
+        sourceDouble.transform.DOKill();
 
         Vector3 targetScale = Vector3.one;
         Vector3 targetPos = Vector3.zero;
+        Vector3 worldVfxPos = sourceDouble.transform.position;
 
-        Transform parentTransform = sourceDouble.transform.parent;
+        // Tạo các Tweener độc lập thay vì Sequence để SetLink hoạt động chính xác nhất
+        Tweener scaleTween = sourceDouble.transform.DOScale(targetScale, effectDuration)
+            .SetEase(Ease.InQuad)
+            .SetLink(sourceDouble.gameObject, LinkBehaviour.KillOnDestroy);
 
-        // Chạy Tween phình to lấp đầy ô 1x1
-        Sequence seq = DOTween.Sequence();
-        seq.Join(sourceDouble.transform.DOScale(targetScale, 0.18f).SetEase(Ease.InQuad));
-        seq.Join(sourceDouble.transform.DOMove(targetPos,0.18f).SetEase(Ease.InQuad));   
-        seq.OnComplete(() =>
+        sourceDouble.transform.DOLocalMove(targetPos, effectDuration)
+            .SetEase(Ease.InQuad)
+            .SetLink(sourceDouble.gameObject, LinkBehaviour.KillOnDestroy);
+
+        // Bắt sự kiện OnComplete từ scaleTween
+        scaleTween.OnComplete(() =>
         {
-            PlayMorphVFX(targetPos);
+           
+            SetBlockVisualVisible(newBlock, true);
+
+            if (sourceDouble != null && sourceDouble.gameObject != null)
+            {
+                Destroy(sourceDouble.gameObject);
+            }
+            onComplete?.Invoke();
         });
     }
 
-    public void PlayMorphVFX(Vector3 worldPosition)
+   
+    private void SetBlockVisualVisible(JellyBlockBase block, bool isVisible)
     {
-        if (morpVFX == null) return;
+        if (block == null || block.gameObject == null) return;
 
-        // 1. Init VFX tại vị trí World
-        GameObject vfxInstance = Instantiate(morpVFX, worldPosition, Quaternion.identity);
-
-        // 2. Tính toán thời gian sống dựa trên Particle System (nếu có)
-        float destroyDelay = 1.5f; // Thời gian mặc định an toàn
-
-        if (vfxInstance.TryGetComponent<ParticleSystem>(out var ps))
+        
+        Renderer[] renderers = block.GetComponentsInChildren<Renderer>(true);
+        foreach (Renderer rend in renderers)
         {
-            // Thời gian = Độ dài animation + thời gian sống tối đa của hạt
-            destroyDelay = ps.main.duration + ps.main.startLifetime.constantMax;
+            rend.enabled = isVisible;
         }
-
-        // 3. Hủy GameObject VFX sau khi chạy xong
-        Destroy(vfxInstance, destroyDelay);
     }
 }

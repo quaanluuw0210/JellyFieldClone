@@ -11,6 +11,23 @@ public enum JellyColor
     Orange
 }
 
+public static class JellyColorExtensions
+{
+    public static Color ToUnityColor(this JellyColor jellyColor)
+    {
+        return jellyColor switch
+        {
+            JellyColor.Red => Color.red,             // hoặc new Color(0.9f, 0.2f, 0.2f)
+            JellyColor.Blue => Color.blue,            // hoặc new Color(0.2f, 0.5f, 1.0f)
+            JellyColor.Green => Color.green,           // hoặc new Color(0.2f, 0.8f, 0.2f)
+            JellyColor.Yellow => Color.yellow,          // hoặc new Color(1.0f, 0.9f, 0.1f)
+            JellyColor.Purple => new Color(0.6f, 0.1f, 0.8f), // Tím
+            JellyColor.Orange => new Color(1.0f, 0.5f, 0.0f), // Cam
+            _ => Color.white
+        };
+    }
+}
+
 public abstract class JellyBlockBase : MonoBehaviour
 {
     [Header("Jelly")]
@@ -39,7 +56,7 @@ public abstract class JellyBlockBase : MonoBehaviour
         }    
     }    
 
-    // Tự động chạy trong Unity Editor ngay khi bạn kéo Material mới vào Inspector
+    
     private void OnValidate()
     {
         ApplyVisuals();
@@ -101,6 +118,12 @@ public abstract class JellyBlockBase : MonoBehaviour
     {
         material = newMaterial; // hiện field material đang private, cần setter
         ApplyVisuals();
+    }
+
+    protected virtual void OnDestroy()
+    {
+       
+        transform.DOKill();
     }
 
 }

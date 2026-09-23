@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
@@ -56,23 +58,47 @@ public class GameManager : MonoBehaviour
 
             // Cập nhật dữ liệu & gọi Match
             gridSystem.PlaceBlock(selectedBlock, gridPos);
-            MatchLogic.ProcessMatchAndMerge(gridSystem, gridPos);
+            StartCoroutine(RunMatchChain(gridPos));
 
             selectedBlock = null;
         }
     }
-    //public void HandleBlockDropped(Block block, Vector2Int gridPos)
-    //{
-    //    Debug.Log($"[GameManager] Block {block.name} vừa được thả vào vị trí Grid: {gridPos}");
 
-    //    // Thực hiện logic Gộp màu (Match & Merge) ngay sau khi thả Block thành công
-    //    bool hasMatch = MatchLogic.ProcessMatchAndMerge(gridSystem, gridPos);
+    private IEnumerator RunMatchChain(Vector2Int startPos)
+    {
+        HashSet<Vector2Int> currentSeeds = new HashSet<Vector2Int> { startPos };
+        bool anyMatchInChain = false;
 
-    //    if (hasMatch)
-    //    {
-    //        Debug.Log("[GameManager] Gộp màu thành công!");
-    //    }
-    //}
+        while (currentSeeds.Count > 0)
+        {
+            bool hasMatch = MatchLogic.ProcessMatchWave(
+                gridSystem,
+                currentSeeds,
+                out HashSet<Block> affectedBlocks,
+                out HashSet<Vector2Int> nextSeeds);
+
+            if (!hasMatch)
+            {
+                break; // hết combo, dừng chain
+            }
+
+            anyMatchInChain = true;
+
+            // Chờ TẤT CẢ block bị ảnh hưởng xử lý xong (remove anim + recover shape/morph)
+            foreach (Block b in affectedBlocks)
+            {
+                if (b == null) continue;
+                yield return new WaitUntil(() => b == null || !b.IsProcessingRemoval);
+            }
+
+            currentSeeds = nextSeeds;
+        }
+
+        if (anyMatchInChain)
+        {
+            Debug.Log("[GameManager] Gộp màu thành công (chain hoàn tất)!");
+        }
+    }
 
 
     public void HandleBlockDropped(Block block, Vector2Int gridPos)
@@ -115,11 +141,7 @@ public class GameManager : MonoBehaviour
             block.SetPlaced(true);
 
             // d. Thực hiện logic gộp màu (Match & Merge)
-            bool hasMatch = MatchLogic.ProcessMatchAndMerge(gridSystem, gridPos);
-            if (hasMatch)
-            {
-                Debug.Log("[GameManager] Gộp màu thành công!");
-            }
+            StartCoroutine(RunMatchChain(gridPos));
 
             // e. Kiểm tra nếu khay Spawn hết khối thì sinh đợt mới
             if (spawnView != null && spawnView.SpawnBlocks.Count == 0)

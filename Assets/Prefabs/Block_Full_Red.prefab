@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 5352459977494021846}
   - component: {fileID: 8023041573463935273}
   - component: {fileID: 4745122146793138549}
+  - component: {fileID: 3056990368572216851}
   m_Layer: 8
   m_Name: Cube_Sigle_Red
   m_TagString: Untagged
@@ -130,7 +131,7 @@ MonoBehaviour:
   color: 0
   material: {fileID: 0}
   blockScale: {x: 1, y: 0.5, z: 1}
-  spreadAnim: {fileID: 0}
+  spreadAnim: {fileID: 3056990368572216851}
 --- !u!54 &8023041573463935273
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -174,6 +175,18 @@ MonoBehaviour:
   Mass: 1
   stiffness: 1
   damping: 0.75
+--- !u!114 &3056990368572216851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8139815334777378967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aad5ce11d88d27642a06cd7c57b6816b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JellySpreadAnim
 --- !u!1 &8899516770398214533
 GameObject:
   m_ObjectHideFlags: 0
@@ -252,6 +265,7 @@ MonoBehaviour:
   returnDuration: 0.32
   snapEase: 27
   returnEase: 30
+  morpVFX: {fileID: 6392319658486080311, guid: c514b85e4ef509c4e96c9a495f00e489, type: 3}
 --- !u!114 &3127850356744068946
 MonoBehaviour:
   m_ObjectHideFlags: 0

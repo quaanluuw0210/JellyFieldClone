@@ -131,7 +131,7 @@ MonoBehaviour:
   color: 0
   material: {fileID: 2100000, guid: ee1b1b153927adb4194bd6c1e8d9a65f, type: 2}
   blockScale: {x: 1, y: 0.5, z: 0.5}
-  spreadAnim: {fileID: 0}
+  spreadAnim: {fileID: -2351728621497025593}
   orientation: 0
 --- !u!54 &458299304313626439
 Rigidbody:
@@ -188,4 +188,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aad5ce11d88d27642a06cd7c57b6816b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JellySpreadAnim
-  morpVFX: {fileID: 0}

@@ -618,7 +618,7 @@ MonoBehaviour:
   - color: 2
     material: {fileID: 2100000, guid: a75edac506259b044934d53ba8c7c994, type: 2}
   - color: 1
-    material: {fileID: 2100000, guid: a75edac506259b044934d53ba8c7c994, type: 2}
+    material: {fileID: 2100000, guid: 78c59b568db7f744099993999d24206f, type: 2}
 --- !u!4 &1017040751
 Transform:
   m_ObjectHideFlags: 0
@@ -682,8 +682,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   gridSystem: {fileID: 1107045569}
   boardView: {fileID: 1107045571}
-  spawnView: {fileID: 1623218}
   inputController: {fileID: 1107045573}
+  spawnView: {fileID: 1623218}
 --- !u!114 &1107045571
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -762,7 +762,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aad5ce11d88d27642a06cd7c57b6816b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JellySpreadAnim
-  morpVFX: {fileID: 0}
 --- !u!4 &1917723295
 Transform:
   m_ObjectHideFlags: 0
@@ -773,6 +772,51 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 2.17312, y: 1.6, z: 1.55788}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2141490169
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2141490171}
+  - component: {fileID: 2141490170}
+  m_Layer: 0
+  m_Name: HightLightDragManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2141490170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2141490169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89dc53101baddc94eb77bbe8a2361568, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GridHighlightManager
+  highlightFramePrefab: {fileID: 1328858744137930829, guid: 81f7356694857c842b2ea0e06829a499, type: 3}
+--- !u!4 &2141490171
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2141490169}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.95849, y: 0.0225, z: 2.02185}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -790,3 +834,4 @@ SceneRoots:
   - {fileID: 1017040751}
   - {fileID: 1917723295}
   - {fileID: 1623219}
+  - {fileID: 2141490171}
