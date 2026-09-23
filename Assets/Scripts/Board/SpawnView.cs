@@ -1,4 +1,4 @@
-﻿using DG.Tweening; // Thêm namespace DOTween
+﻿using DG.Tweening;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,40 +10,82 @@ public class SpawnView : MonoBehaviour
     [Header("Prefabs")]
     [SerializeField] private GameObject cellPrefab;
 
-    [Header("Startup Test")]
-    [SerializeField] private bool runHardcodedTestOnStart;
-    [SerializeField] private List<Block> testBlockPrefabs;
 
+    // slotViews[i] quản lý visual của ô slot, đi kèm thông tin Block đang nằm trên Slot đó
     private readonly List<GameObject> slotViews = new List<GameObject>();
-    private readonly List<Block> spawnBlocks = new List<Block>();
+    private readonly List<Block> activeSpawnBlocks = new List<Block>();
 
-    public IReadOnlyList<Block> SpawnBlocks => spawnBlocks;
+    // Hàng chờ lưu các Block chưa được sinh ra khay
+    private readonly Queue<GameObject> blockQueue = new Queue<GameObject>();
+
+    public IReadOnlyList<Block> SpawnBlocks => activeSpawnBlocks;
 
     private void Start()
     {
-        if (runHardcodedTestOnStart)
+      
+    }
+
+    /// <summary>
+    /// Khởi tạo khu vực Spawn từ dữ liệu LevelData
+    /// </summary>
+    public void InitializeSpawn(int activeSlotCount, List<GameObject> blockSequence)
+    {
+        ClearSpawnVisuals();
+        blockQueue.Clear();
+
+        // 1. Đẩy danh sách Block vào Hàng chờ (Queue)
+        if (blockSequence != null)
         {
-            TestSpawnHardcodedSpawn();
+            foreach (var prefab in blockSequence)
+            {
+                if (prefab != null)
+                {
+                    blockQueue.Enqueue(prefab);
+                }
+            }
+        }
+
+        // 2. Tạo Visual các Slot khay spawn
+        GenerateSpawnSlots(activeSlotCount);
+
+        // 3. Lấp đầy các Slot ban đầu từ Hàng chờ
+        CheckAndReplenishSlots();
+    }
+
+    /// <summary>
+    /// Kiểm tra các Slot trống và lấy Block từ Queue ra để spawn bổ sung
+    /// </summary>
+    public void CheckAndReplenishSlots()
+    {
+        if (blockQueue.Count == 0) return;
+
+        for (int i = 0; i < slotViews.Count; i++)
+        {
+            // Kiểm tra xem Slot thứ i đã có Block nào nằm trên đó chưa
+            if (activeSpawnBlocks[i] == null && blockQueue.Count > 0)
+            {
+                GameObject nextBlockPrefab = blockQueue.Dequeue();
+                if (nextBlockPrefab != null)
+                {
+                    Block spawnedBlock = SpawnBlockAtSlot(i, nextBlockPrefab);
+                    activeSpawnBlocks[i] = spawnedBlock;
+                }
+            }
         }
     }
 
-    public void TestSpawnHardcodedSpawn()
+    /// <summary>
+    /// Gọi hàm này khi người chơi kéo 1 Block ra khỏi Spawn Area thành công
+    /// </summary>
+    public void RemoveBlockFromSpawn(Block block)
     {
-        if (testBlockPrefabs == null || testBlockPrefabs.Count == 0)
+        int index = activeSpawnBlocks.IndexOf(block);
+        if (index != -1)
         {
-            Debug.LogWarning("[SpawnView] Chưa gán testBlockPrefabs trong Inspector!");
-            return;
-        }
+            activeSpawnBlocks[index] = null; // Đánh dấu Slot đó hiện tại bị trống
 
-        int slotCount = Mathf.Min(3, testBlockPrefabs.Count);
-        GenerateSpawnSlots(slotCount);
-
-        for (int i = 0; i < slotCount; i++)
-        {
-            if (testBlockPrefabs[i] != null)
-            {
-                SpawnBlockAtSlot(i, testBlockPrefabs[i]);
-            }
+            // Tự động lấp trống Slot bằng Block tiếp theo trong Queue
+            CheckAndReplenishSlots();
         }
     }
 
@@ -65,42 +107,41 @@ public class SpawnView : MonoBehaviour
                 slotView.name = string.Format("SpawnSlot_{0}", i);
                 slotViews.Add(slotView);
             }
+
+            // Đặt giữ chỗ giá trị null tương ứng với số lượng slot
+            activeSpawnBlocks.Add(null);
         }
     }
 
-    public Block SpawnBlockAtSlot(int slotIndex, Block blockPrefab)
+    private Block SpawnBlockAtSlot(int slotIndex, GameObject blockPrefabObj)
     {
-        if (blockPrefab == null) return null;
+        if (blockPrefabObj == null) return null;
 
         Vector3 spawnPosition = GetSlotWorldPosition(slotIndex);
         spawnPosition += Vector3.up * 0.1f;
 
-        Block blockView = Instantiate(blockPrefab, spawnPosition, Quaternion.identity, transform);
-        blockView.name = string.Format("SpawnBlock_{0}", slotIndex);
+        GameObject instantiatedObj = Instantiate(blockPrefabObj, spawnPosition, Quaternion.identity, transform);
+        Block blockView = instantiatedObj.GetComponent<Block>();
 
-        GameManager gameManager = FindFirstObjectByType<GameManager>();
-        if (gameManager != null)
+        if (blockView != null)
         {
-            blockView.OnBlockDropped += gameManager.HandleBlockDropped;
+            blockView.name = string.Format("SpawnBlock_{0}", slotIndex);
+
+            GameManager gameManager = FindFirstObjectByType<GameManager>();
+            if (gameManager != null)
+            {
+                blockView.OnBlockDropped += gameManager.HandleBlockDropped;
+            }
+
+            blockView.SetPlaced(false);
         }
 
-        blockView.SetPlaced(false);
-
-        spawnBlocks.Add(blockView);
         return blockView;
-    }
-
-    public void RemoveBlockFromSpawn(Block block)
-    {
-        if (spawnBlocks.Contains(block))
-        {
-            spawnBlocks.Remove(block);
-        }
     }
 
     public Vector3 GetSlotWorldPosition(int slotIndex)
     {
-        if (slotViews.Count > 0 && slotIndex < slotViews.Count)
+        if (slotViews.Count > 0 && slotIndex < slotViews.Count && slotViews[slotIndex] != null)
         {
             return slotViews[slotIndex].transform.position;
         }
@@ -110,9 +151,6 @@ public class SpawnView : MonoBehaviour
         return transform.position + new Vector3(startX + (slotIndex * slotSpacing), 0f, 0f);
     }
 
-    /// <summary>
-    /// Dọn dẹp sạch toàn bộ Visual Slot và Block cũ chưa được kéo đặt lên Board
-    /// </summary>
     public void ClearSpawnVisuals()
     {
         // 1. Dọn dẹp các Slot hiển thị khay
@@ -122,26 +160,25 @@ public class SpawnView : MonoBehaviour
         }
         slotViews.Clear();
 
-        // 2. Dọn dẹp các Block CÒN LẠI TRÊN KHAY (chưa kéo lên Board)
-        for (int i = spawnBlocks.Count - 1; i >= 0; i--)
+        // 2. Dọn dẹp các Block CÒN LẠI TRÊN KHAY
+        foreach (Block blockView in activeSpawnBlocks)
         {
-            Block blockView = spawnBlocks[i];
             if (blockView != null && blockView.gameObject != null)
             {
-                // Dừng mọi Coroutine và Tween đang chạy trên Block trước khi Hủy
                 blockView.StopAllCoroutines();
                 blockView.transform.DOKill(true);
                 DestroyVisual(blockView.gameObject);
             }
         }
-        spawnBlocks.Clear();
+        activeSpawnBlocks.Clear();
     }
+
+
 
     private static void DestroyVisual(Object visual)
     {
         if (visual == null) return;
 
-        // Nếu là GameObject, kill sạch Tween liên quan đến nó
         if (visual is GameObject go)
         {
             go.transform.DOKill(true);

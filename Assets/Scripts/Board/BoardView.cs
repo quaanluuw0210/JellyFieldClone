@@ -13,13 +13,7 @@ public class BoardView : MonoBehaviour
 
     [Header("Prefabs")]
     [SerializeField] private GameObject cellPrefab;
-    [SerializeField] private Block blockPrefab;
-    [SerializeField] private Block blockPrefab2;
 
-
-
-    [Header("Startup Test")]
-    [SerializeField] private bool runHardcodedTestOnStart;
 
     private readonly Dictionary<Vector2Int, GameObject> cellViews =
         new Dictionary<Vector2Int, GameObject>();
@@ -37,11 +31,6 @@ public class BoardView : MonoBehaviour
 
     private void Start()
     {
-        if (runHardcodedTestOnStart)
-        {
-            TestSpawnHardcodedBoard();
-            return;
-        }
 
         GenerateBoardVisuals();
     }
@@ -70,45 +59,24 @@ public class BoardView : MonoBehaviour
     /// Sinh một Block tại Cell hợp lệ, cao hơn mặt bàn 0.1 đơn vị để tránh
     /// z-fighting với khung ô và kích hoạt animation xuất hiện.
     /// </summary>
-    public Block SpawnBlockAt(Vector2Int gridPos)
+    public Block SpawnBlockAt(Vector2Int gridPos, Block customBlockPrefab)
     {
-        if (gridSystem == null || blockPrefab == null) return null;
-        if (!gridSystem.IsValidPosition(gridPos)) return null;
+        if (customBlockPrefab == null) { Debug.LogWarning($"[SpawnBlockAt] prefab null tại {gridPos}"); return null; }
+
+        Block prefabToSpawn = customBlockPrefab;
+
+
+        if (gridSystem == null) { Debug.LogWarning("[SpawnBlockAt] gridSystem null"); return null; }
+        if (!gridSystem.IsValidPosition(gridPos)) { Debug.LogWarning($"[SpawnBlockAt] {gridPos} không phải vị trí hợp lệ trên grid"); return null; }
 
         Cell cell = gridSystem.GetCell(gridPos);
-        if (cell == null || cell.HasBlock()) return null;
+        if (cell == null) { Debug.LogWarning($"[SpawnBlockAt] cell null tại {gridPos}"); return null; }
+        if (cell.HasBlock()) { Debug.LogWarning($"[SpawnBlockAt] cell {gridPos} đã có block rồi"); return null; }
 
         Vector3 spawnPosition = GetWorldPositionForCell(gridPos);
         spawnPosition += Vector3.up * 0.1f;
 
-        Block blockView = Instantiate(blockPrefab, spawnPosition, Quaternion.identity, transform);
-        blockView.name = string.Format("Block_{0}_{1}", gridPos.x, gridPos.y);
-
-        blockView.InitializePlacedState(cell);
-        blockView.SetPlaced(true);
-
-        GameManager gameManager = FindFirstObjectByType<GameManager>();
-        if (gameManager != null)
-        {
-            blockView.OnBlockDropped += gameManager.HandleBlockDropped;
-        }
-
-        blockViews.Add(blockView);
-        return blockView;
-    }
-
-    public Block SpawnBlock2At(Vector2Int gridPos)
-    {
-        if (gridSystem == null || blockPrefab2 == null) return null;
-        if (!gridSystem.IsValidPosition(gridPos)) return null;
-
-        Cell cell = gridSystem.GetCell(gridPos);
-        if (cell == null || cell.HasBlock()) return null;
-
-        Vector3 spawnPosition = GetWorldPositionForCell(gridPos);
-        spawnPosition += Vector3.up * 0.1f;
-
-        Block blockView = Instantiate(blockPrefab2, spawnPosition, Quaternion.identity, transform);
+        Block blockView = Instantiate(customBlockPrefab, spawnPosition, Quaternion.identity, transform);
         blockView.name = string.Format("Block_{0}_{1}", gridPos.x, gridPos.y);
 
         blockView.InitializePlacedState(cell);
@@ -153,46 +121,27 @@ public class BoardView : MonoBehaviour
         blockViews.Clear();
     }
 
-    /// <summary>
-    /// Tạo lưới 5x5 và sinh Block mẫu ở ô trung tâm (2, 2). Có thể gọi từ
-    /// Inspector hoặc bật runHardcodedTestOnStart để kiểm tra pipeline nhanh.
-    /// </summary>
-    public void TestSpawnHardcodedBoard()
+    public void InitializeBoard(LevelData levelData)
     {
-        if (gridSystem == null) return;
+        if (levelData == null || gridSystem == null) return;
 
-        gridSystem.InitializeRectangularGrid(5, 5);
+        // 1. Khởi tạo dữ liệu ô cờ trong GridSystem từ danh sách vị trí hợp lệ
+        gridSystem.InitializeGrid(levelData.validCellPositions);
+
+        // 2. Sinh Visual cho các Cell
         GenerateBoardVisuals();
-        SpawnBlockAt(new Vector2Int(2, 2));
-        SpawnBlock2At(new Vector2Int(4, 2));
-    }
 
-    private bool TryGetGridBounds(out Vector2Int minPosition, out Vector2Int maxPosition)
-    {
-        minPosition = default;
-        maxPosition = default;
-
-        if (gridSystem == null) return false;
-
-        bool hasCell = false;
-        foreach (Cell cell in gridSystem.GetAllCells())
+        // 3. Sinh các Block được đặt sẵn theo LevelData
+        if (levelData.placedBlocks != null)
         {
-            if (cell == null) continue;
-
-            Vector2Int position = cell.GridPosition;
-            if (!hasCell)
+            foreach (var placedData in levelData.placedBlocks)
             {
-                minPosition = position;
-                maxPosition = position;
-                hasCell = true;
-                continue;
+                if (placedData.blockPrefab != null)
+                {
+                    SpawnBlockAt(placedData.gridPosition, placedData.blockPrefab);
+                }
             }
-
-            minPosition = Vector2Int.Min(minPosition, position);
-            maxPosition = Vector2Int.Max(maxPosition, position);
         }
-
-        return hasCell;
     }
 
     private static void DestroyVisual(Object visual)

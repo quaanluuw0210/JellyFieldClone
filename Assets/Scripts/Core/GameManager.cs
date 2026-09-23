@@ -9,6 +9,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] private BoardView boardView;
     [SerializeField] private InputController inputController;
     [SerializeField] private SpawnView spawnView;
+
+    [Header("Level Configurations")]
+    [SerializeField] private List<LevelData> levelDatas;
+    private int currentLevelIndex = 0;
+
     private Block selectedBlock;
 
     private void OnEnable()
@@ -27,8 +32,79 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-       
+        // Bắt đầu game tại Level 0
+        LoadLevel(0);
     }
+
+    #region Level Management
+
+    /// <summary>
+    /// Tải màn chơi theo Index chỉ định
+    /// </summary>
+    public void LoadLevel(int levelIndex)
+    {
+        if (levelDatas == null || levelDatas.Count == 0)
+        {
+            Debug.LogError("[GameManager] Danh sách levelDatas chưa được thiết lập!");
+            return;
+        }
+
+        if (levelIndex < 0 || levelIndex >= levelDatas.Count)
+        {
+            Debug.LogWarning($"[GameManager] Index Level {levelIndex} vượt quá giới hạn. Đã hoàn thành tất cả Level!");
+            return;
+        }
+
+        currentLevelIndex = levelIndex;
+        LevelData currentLevelData = levelDatas[currentLevelIndex];
+
+        // 1. Khởi tạo dữ liệu điểm mục tiêu cho ScoreManager
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.InitLevelScores(currentLevelData);
+        }
+
+        // 2. Khởi tạo Bàn cờ và các Block đặt sẵn
+        if (boardView != null)
+        {
+            boardView.InitializeBoard(currentLevelData);
+        }
+
+        // 3. Khởi tạo Khay Spawn và chuỗi Block chờ spawn
+        if (spawnView != null)
+        {
+            spawnView.InitializeSpawn(currentLevelData.activeSlotCount, currentLevelData.blockPrefabsSequence);
+        }
+
+        Debug.Log($"[GameManager] Đã khởi tạo Level {currentLevelIndex + 1} thành công!");
+    }
+
+    /// <summary>
+    /// Chuyển sang Level kế tiếp (gọi khi Thắng màn)
+    /// </summary>
+    public void NextLevel()
+    {
+        int nextLevelIndex = currentLevelIndex + 1;
+        if (nextLevelIndex < levelDatas.Count)
+        {
+            LoadLevel(nextLevelIndex);
+        }
+        else
+        {
+            Debug.Log("[GameManager] Chúc mừng! Bạn đã hoàn thành tất cả màn chơi!");
+            // Bạn có thể mở UI Win Game toàn bộ tại đây
+        }
+    }
+
+    /// <summary>
+    /// Chơi lại Level hiện tại
+    /// </summary>
+    public void RestartLevel()
+    {
+        LoadLevel(currentLevelIndex);
+    }
+
+    #endregion
 
     #region Event Handlers (Xử lý Game Rules)
 
@@ -98,8 +174,21 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log("[GameManager] Gộp màu thành công (chain hoàn tất)!");
         }
+
+        // Sau khi kết thúc chuỗi Match, kiểm tra xem người chơi đã thắng chưa
+        CheckWinCondition();
     }
 
+    private void CheckWinCondition()
+    {
+        if (ScoreManager.Instance != null && ScoreManager.Instance.IsPlayerWin())
+        {
+            Debug.Log("[GameManager] NGƯỜI CHƠI ĐÃ THẮNG MÀN CHƠI!");
+
+            // Tự động chuyển qua màn tiếp theo (hoặc bạn có thể gọi hàm này từ nút UI Win)
+            NextLevel();
+        }
+    }
 
     public void HandleBlockDropped(Block block, Vector2Int gridPos)
     {
@@ -110,11 +199,8 @@ public class GameManager : MonoBehaviour
 
         if (!isInsideBoard)
         {
-            // === TRƯỜNG HỢP 1: THẢ NGOÀI BÀN CỜ (Hoặc rơi lại khu vực Spawn) ===
+            // === TRƯỜNG HỢP 1: THẢ NGOÀI BÀN CỜ ===
             Debug.LogWarning($"[GameManager] Block {block.name} thả ngoài phạm vi bàn cờ (Tọa độ {gridPos} không hợp lệ).");
-
-            // Trả khối Jelly về vị trí cũ trên khay Spawn
-            //block.OnPlaceFailed();
             return;
         }
 
@@ -137,25 +223,16 @@ public class GameManager : MonoBehaviour
 
             // c. Đăng ký dữ liệu vào Cell & Khóa không cho kéo thả nữa
             gridSystem.PlaceBlock(block, gridPos);
-            block.InitializePlacedState(targetCell); // Hàm này dán hasBeenPlaced = true
+            block.InitializePlacedState(targetCell);
             block.SetPlaced(true);
 
             // d. Thực hiện logic gộp màu (Match & Merge)
             StartCoroutine(RunMatchChain(gridPos));
-
-            // e. Kiểm tra nếu khay Spawn hết khối thì sinh đợt mới
-            if (spawnView != null && spawnView.SpawnBlocks.Count == 0)
-            {
-                spawnView.TestSpawnHardcodedSpawn();
-            }
         }
         else
         {
             // === TRƯỜNG HỢP 3: TRÚNG BOARD NHƯNG Ô ĐÓ ĐÃ CÓ BLOCK KHÁC ===
             Debug.LogWarning($"[GameManager] Ô {gridPos} trên Board đã bị chiếm chỗ!");
-
-            // Trả về khay Spawn
-            //block.OnPlaceFailed();
         }
     }
 

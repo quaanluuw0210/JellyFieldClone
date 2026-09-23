@@ -150,10 +150,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpawnView
   slotSpacing: 1.5
   cellPrefab: {fileID: 1822025829048321520, guid: 3195c3b9ec57e6148a49d3551ac5ceb1, type: 3}
-  runHardcodedTestOnStart: 1
-  testBlockPrefabs:
-  - {fileID: 5635659580456211390, guid: 2634ada285796bf42bbfeef011604fed, type: 3}
-  - {fileID: 5085520754908721666, guid: 45ccacaf2a7b69f4382fdb0ee3811b31, type: 3}
 --- !u!4 &1623219
 Transform:
   m_ObjectHideFlags: 0
@@ -164,6 +160,50 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 2, y: 0, z: -5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &322508138
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 322508140}
+  - component: {fileID: 322508139}
+  m_Layer: 0
+  m_Name: ScoreManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &322508139
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 322508138}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b8255879c99dfd4b80ab4c9ecbc3499, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ScoreManager
+--- !u!4 &322508140
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 322508138}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.95849, y: 0.0225, z: 2.02185}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -257,7 +297,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0.42261827, y: 0, z: 0, w: 0.9063079}
-  m_LocalPosition: {x: 2, y: 20, z: -16}
+  m_LocalPosition: {x: 2, y: 20, z: -18}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -684,6 +724,8 @@ MonoBehaviour:
   boardView: {fileID: 1107045571}
   inputController: {fileID: 1107045573}
   spawnView: {fileID: 1623218}
+  levelDatas:
+  - {fileID: 11400000, guid: 6f29f7e92305c9a49a592272f2fa21d5, type: 2}
 --- !u!114 &1107045571
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -698,9 +740,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BoardView
   gridSystem: {fileID: 1107045569}
   cellPrefab: {fileID: 1822025829048321520, guid: 3195c3b9ec57e6148a49d3551ac5ceb1, type: 3}
-  blockPrefab: {fileID: 5467744977075159571, guid: cc38271705e53074e940d3b4fcd7529f, type: 3}
-  blockPrefab2: {fileID: 5085520754908721666, guid: 45ccacaf2a7b69f4382fdb0ee3811b31, type: 3}
-  runHardcodedTestOnStart: 1
 --- !u!4 &1107045572
 Transform:
   m_ObjectHideFlags: 0
@@ -835,3 +874,4 @@ SceneRoots:
   - {fileID: 1917723295}
   - {fileID: 1623219}
   - {fileID: 2141490171}
+  - {fileID: 322508140}

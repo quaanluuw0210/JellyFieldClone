@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45aef3ece226d284f91a5cce33a568e2, type: 3}
+  m_Name: Level_01
+  m_EditorClassIdentifier: Assembly-CSharp::LevelData
+  validCellPositions:
+  - {x: 0, y: 2}
+  - {x: 1, y: 2}
+  - {x: 1, y: 1}
+  - {x: 2, y: 1}
+  - {x: 3, y: 1}
+  - {x: 3, y: 2}
+  - {x: 4, y: 2}
+  - {x: 2, y: 2}
+  - {x: 1, y: 3}
+  - {x: 2, y: 3}
+  - {x: 3, y: 3}
+  activeSlotCount: 1
+  blockPrefabsSequence:
+  - {fileID: 8899516770398214533, guid: a78ed93319212c44d9bcc681eed8cc34, type: 3}
+  - {fileID: 8084771339600217502, guid: 45ccacaf2a7b69f4382fdb0ee3811b31, type: 3}
+  - {fileID: 8805890340940736078, guid: 1eece88d0fbcdcf46a744c17fdbc1111, type: 3}
+  placedBlocks:
+  - gridPosition: {x: 2, y: 3}
+    blockPrefab: {fileID: 140882862153467681, guid: cc38271705e53074e940d3b4fcd7529f, type: 3}
+  - gridPosition: {x: 1, y: 1}
+    blockPrefab: {fileID: 140882862153467681, guid: cc38271705e53074e940d3b4fcd7529f, type: 3}
+  - gridPosition: {x: 3, y: 2}
+    blockPrefab: {fileID: 140882862153467681, guid: cc38271705e53074e940d3b4fcd7529f, type: 3}
+  targetScores:
+  - color: 0
+    requiredScore: 2
+  - color: 1
+    requiredScore: 2

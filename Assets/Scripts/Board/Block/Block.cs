@@ -385,6 +385,9 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
                 .OnComplete(() =>
                     {
                         PlayMorphVFX(subBlock.transform.position, subBlock.Color.ToUnityColor());
+
+                        ScoreManager.Instance.RemoveColorScore(subBlock.Color, 1);
+                        
                         Destroy(subBlock.gameObject);
                     }
                 );
