@@ -66,6 +66,8 @@ public class ScoreManager : MonoBehaviour
             return;
         }
         scoreDict[color]-=score;
+
+        UIManager.Instance.TargetUIManager.UpdateTargetScore(color, scoreDict[color]);
     }
 
     public bool IsPlayerWin()

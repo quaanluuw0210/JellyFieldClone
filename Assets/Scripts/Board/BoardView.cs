@@ -31,8 +31,6 @@ public class BoardView : MonoBehaviour
 
     private void Start()
     {
-
-        GenerateBoardVisuals();
     }
 
     /// <summary>
@@ -61,6 +59,7 @@ public class BoardView : MonoBehaviour
     /// </summary>
     public Block SpawnBlockAt(Vector2Int gridPos, Block customBlockPrefab)
     {
+        Debug.Log($"[SpawnBlockAt] ENTER, gridPos={gridPos}, prefab={customBlockPrefab}");
         if (customBlockPrefab == null) { Debug.LogWarning($"[SpawnBlockAt] prefab null tại {gridPos}"); return null; }
 
         Block prefabToSpawn = customBlockPrefab;
@@ -136,6 +135,7 @@ public class BoardView : MonoBehaviour
         {
             foreach (var placedData in levelData.placedBlocks)
             {
+                Debug.Log($"[InitializeBoard] xét placedData tại {placedData.gridPosition}, prefab = {placedData.blockPrefab}");
                 if (placedData.blockPrefab != null)
                 {
                     SpawnBlockAt(placedData.gridPosition, placedData.blockPrefab);

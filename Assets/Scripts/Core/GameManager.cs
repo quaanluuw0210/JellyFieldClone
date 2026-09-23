@@ -76,6 +76,12 @@ public class GameManager : MonoBehaviour
             spawnView.InitializeSpawn(currentLevelData.activeSlotCount, currentLevelData.blockPrefabsSequence);
         }
 
+        if(UIManager.Instance != null)
+        {
+            UIManager.Instance.SetUpUI(currentLevelData);
+        } 
+            
+
         Debug.Log($"[GameManager] Đã khởi tạo Level {currentLevelIndex + 1} thành công!");
     }
 
