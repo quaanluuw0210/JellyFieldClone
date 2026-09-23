@@ -3,6 +3,7 @@ using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -19,6 +20,7 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
     [SerializeField] private float dragHeight = 0.75f;
     [SerializeField] private float pickupHeight = 0.7f;
     [SerializeField] private float dragSmoothTime = 0.04f;
+    [SerializeField] private float dragForwardOffset = 1.5f;
 
     [Header("Drop")]
     [SerializeField] private float snapDuration = 0.22f;
@@ -45,7 +47,7 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
     private Vector2Int previousGridPosition;
     private Tween movementTween;
     private Tween scaleTween;
-
+    private float groundY;
     public IReadOnlyList<JellyBlockBase> SubBlocks => subBlocks;
     public bool IsDragging => isDragging;
 
@@ -124,6 +126,7 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
     {
         originalScale = transform.localScale;
         originalPosition = transform.position;
+        groundY = transform.position.y;
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -175,6 +178,12 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
 
         Vector3 targetPosition = pointerRay.GetPoint(distance);
         targetPosition.y = originalPosition.y + pickupHeight;
+
+        Vector3 cameraForward = mainCamera.transform.forward;
+        cameraForward.y = 0;
+        cameraForward.Normalize();
+
+        targetPosition += cameraForward * dragForwardOffset;
 
         transform.position = Vector3.SmoothDamp(
             transform.position,
@@ -232,7 +241,7 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
         RegisterInCell(cell);
 
         Vector3 snapPosition = gridSystem.GetWorldPosition(gridPosition) + boardWorldOffset;
-        snapPosition.y = originalPosition.y;
+        snapPosition.y = groundY;
 
         movementTween?.Kill();
         movementTween = transform.DOMove(snapPosition, snapDuration)
@@ -267,7 +276,7 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
     private void ReturnToOriginalPosition()
     {
         isDragging = false;
-
+        originalPosition.y = groundY;
         movementTween?.Kill();
         movementTween = transform.DOMove(originalPosition, returnDuration)
             .SetEase(returnEase)
@@ -299,6 +308,7 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
         RegisterInCell(cell);
         originalPosition = transform.position;
         hasBeenPlaced = true;
+        groundY = transform.position.y;
     }
 
     public void ClearPlacement()
@@ -306,6 +316,7 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
         ClearPlacementAt(transform.position);
     }
 
+      
     public List<JellyBlockBase> GetSubBlocksTouchingEdge(Vector2Int direction)
     {
         List<JellyBlockBase> touchingBlocks = new List<JellyBlockBase>();

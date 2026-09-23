@@ -8,8 +8,7 @@ public class InputController : MonoBehaviour
     [SerializeField] private LayerMask blockLayer; // Layer của các khối Block
     [SerializeField] private GridSystem gridSystem;
 
-    // Event bắn lên khi người dùng chạm/click vào một ô trên Grid
-    public static event Action<Vector2Int> OnCellTapped;
+
 
     // Event bắn lên khi người dùng chọn/kéo một Block cụ thể
     public static event Action<Block> OnBlockSelected;

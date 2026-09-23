@@ -16,24 +16,39 @@ public class GameManager : MonoBehaviour
 
     private Block selectedBlock;
 
+
+    public static GameManager instance; 
+
     private void OnEnable()
     {
         // Đăng ký lắng nghe các Event từ InputController
         InputController.OnBlockSelected += HandleBlockSelected;
-        InputController.OnCellTapped += HandleCellTapped;
+
     }
 
     private void OnDisable()
     {
         // Hủy đăng ký Event để tránh Memory Leak
         InputController.OnBlockSelected -= HandleBlockSelected;
-        InputController.OnCellTapped -= HandleCellTapped;
+      
     }
 
     private void Start()
     {
-        // Bắt đầu game tại Level 0
-        LoadLevel(0);
+       
+    }
+
+    private void Awake()
+    {
+        if(instance == null)
+        {
+            instance = this;
+        }
+        else
+        {
+            Destroy(this.gameObject);
+        }
+            
     }
 
     #region Level Management
@@ -98,7 +113,7 @@ public class GameManager : MonoBehaviour
         else
         {
             Debug.Log("[GameManager] Chúc mừng! Bạn đã hoàn thành tất cả màn chơi!");
-            // Bạn có thể mở UI Win Game toàn bộ tại đây
+            PlayCurrentLevel();
         }
     }
 
@@ -110,6 +125,11 @@ public class GameManager : MonoBehaviour
         LoadLevel(currentLevelIndex);
     }
 
+    public void PlayCurrentLevel()
+    {
+        LoadLevel(currentLevelIndex);
+    }    
+
     #endregion
 
     #region Event Handlers (Xử lý Game Rules)
@@ -120,32 +140,7 @@ public class GameManager : MonoBehaviour
         Debug.Log($"[GameManager] Đã chọn Block: {block.name}");
     }
 
-    private void HandleCellTapped(Vector2Int gridPos)
-    {
-        if (!gridSystem.IsValidPosition(gridPos))
-        {
-            selectedBlock = null;
-            return;
-        }
-
-        Cell targetCell = gridSystem.GetCell(gridPos);
-
-        if (selectedBlock != null && targetCell != null)
-        {
-            // Lấy vị trí chuẩn trực tiếp từ GridSystem
-            Vector3 targetWorldPos = gridSystem.GetWorldPosition(gridPos);
-
-            // Đặt block tới vị trí mới
-            selectedBlock.transform.position = targetWorldPos + Vector3.up * 0.1f;
-
-            // Cập nhật dữ liệu & gọi Match
-            gridSystem.PlaceBlock(selectedBlock, gridPos);
-            StartCoroutine(RunMatchChain(gridPos));
-
-            selectedBlock = null;
-        }
-    }
-
+    
     private IEnumerator RunMatchChain(Vector2Int startPos)
     {
         HashSet<Vector2Int> currentSeeds = new HashSet<Vector2Int> { startPos };
@@ -173,6 +168,8 @@ public class GameManager : MonoBehaviour
                 yield return new WaitUntil(() => b == null || !b.IsProcessingRemoval);
             }
 
+            yield return new WaitForSecondsRealtime(0.5f);
+
             currentSeeds = nextSeeds;
         }
 
@@ -183,18 +180,29 @@ public class GameManager : MonoBehaviour
 
         // Sau khi kết thúc chuỗi Match, kiểm tra xem người chơi đã thắng chưa
         CheckWinCondition();
+        CheckLossCondition();
     }
 
     private void CheckWinCondition()
     {
         if (ScoreManager.Instance != null && ScoreManager.Instance.IsPlayerWin())
         {
-            Debug.Log("[GameManager] NGƯỜI CHƠI ĐÃ THẮNG MÀN CHƠI!");
 
-            // Tự động chuyển qua màn tiếp theo (hoặc bạn có thể gọi hàm này từ nút UI Win)
-            NextLevel();
+            UIManager.Instance.VictoryUI();
         }
     }
+
+    private void CheckLossCondition()
+    {
+        if(boardView != null)
+        {
+            if(boardView.IsBoardFull()==true)
+            {
+                UIManager.Instance.LossUI();
+            }    
+        } 
+            
+    }    
 
     public void HandleBlockDropped(Block block, Vector2Int gridPos)
     {
@@ -225,6 +233,7 @@ public class GameManager : MonoBehaviour
             if (boardView != null)
             {
                 block.transform.SetParent(boardView.transform);
+                boardView.RegisterPlacedBlock(block);
             }
 
             // c. Đăng ký dữ liệu vào Cell & Khóa không cho kéo thả nữa

@@ -15,8 +15,8 @@ public class SpawnView : MonoBehaviour
     private readonly List<GameObject> slotViews = new List<GameObject>();
     private readonly List<Block> activeSpawnBlocks = new List<Block>();
 
-    // Hàng chờ lưu các Block chưa được sinh ra khay
-    private readonly Queue<GameObject> blockQueue = new Queue<GameObject>();
+    private readonly List<GameObject> blockSequenceList = new List<GameObject>();
+    private int currentBlockIndex = 0;
 
     public IReadOnlyList<Block> SpawnBlocks => activeSpawnBlocks;
 
@@ -31,7 +31,7 @@ public class SpawnView : MonoBehaviour
     public void InitializeSpawn(int activeSlotCount, List<GameObject> blockSequence)
     {
         ClearSpawnVisuals();
-        blockQueue.Clear();
+        blockSequenceList.Clear();
 
         // 1. Đẩy danh sách Block vào Hàng chờ (Queue)
         if (blockSequence != null)
@@ -40,7 +40,7 @@ public class SpawnView : MonoBehaviour
             {
                 if (prefab != null)
                 {
-                    blockQueue.Enqueue(prefab);
+                    blockSequenceList.Add(prefab);
                 }
             }
         }
@@ -57,14 +57,16 @@ public class SpawnView : MonoBehaviour
     /// </summary>
     public void CheckAndReplenishSlots()
     {
-        if (blockQueue.Count == 0) return;
+        if (blockSequenceList.Count == 0) return;
 
         for (int i = 0; i < slotViews.Count; i++)
         {
-            // Kiểm tra xem Slot thứ i đã có Block nào nằm trên đó chưa
-            if (activeSpawnBlocks[i] == null && blockQueue.Count > 0)
+           
+            if (activeSpawnBlocks[i] == null && blockSequenceList.Count > 0)
             {
-                GameObject nextBlockPrefab = blockQueue.Dequeue();
+                GameObject nextBlockPrefab = blockSequenceList[currentBlockIndex % blockSequenceList.Count];
+
+                currentBlockIndex++;
                 if (nextBlockPrefab != null)
                 {
                     Block spawnedBlock = SpawnBlockAtSlot(i, nextBlockPrefab);

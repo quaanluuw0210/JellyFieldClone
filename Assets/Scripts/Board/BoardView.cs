@@ -1,4 +1,6 @@
+using DG.Tweening.Core.Easing;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -111,6 +113,23 @@ public class BoardView : MonoBehaviour
         {
             if (blockView != null)
             {
+                if (GameManager.instance != null)
+                {
+                    blockView.OnBlockDropped -= GameManager.instance.HandleBlockDropped;
+                }
+
+                if (gridSystem != null)
+                {
+                   
+                    Vector2Int gridPos = gridSystem.GetGridPosition(blockView.transform.position);
+                    Cell cell = gridSystem.GetCell(gridPos);
+
+                    if (cell != null)
+                    {
+                        cell.ClearBlock(blockView);
+                    }
+                }
+
                 blockView.ClearPlacement();
                 DestroyVisual(blockView.gameObject);
             }
@@ -118,11 +137,22 @@ public class BoardView : MonoBehaviour
 
         cellViews.Clear();
         blockViews.Clear();
+
+        Block[] childBlocks = GetComponentsInChildren<Block>(true);
+        foreach (Block child in childBlocks)
+        {
+            if (child != null)
+            {
+                child.ClearPlacement();
+                DestroyVisual(child.gameObject);
+            }
+        }
     }
 
     public void InitializeBoard(LevelData levelData)
     {
         if (levelData == null || gridSystem == null) return;
+        ClearBoardVisuals();
 
         // 1. Khởi tạo dữ liệu ô cờ trong GridSystem từ danh sách vị trí hợp lệ
         gridSystem.InitializeGrid(levelData.validCellPositions);
@@ -155,6 +185,36 @@ public class BoardView : MonoBehaviour
         else
         {
             DestroyImmediate(visual);
+        }
+    }
+
+    /// </summary>
+    public bool IsBoardFull()
+    {
+        if (gridSystem == null) return false;
+
+        var allCells = gridSystem.GetAllCells();
+
+       
+        if (allCells == null || allCells.Count() == 0) return false;
+
+        foreach (Cell cell in allCells)
+        {
+            // Nếu tìm thấy ít nhất 1 ô hợp lệ chưa có Block -> Bàn chơi CHƯA đầy
+            if (cell != null && !cell.HasBlock())
+            {
+                return false;
+            }
+        }
+
+        // Tất cả các ô hợp lệ đều đã có Block
+        return true;
+    }
+    public void RegisterPlacedBlock(Block block)
+    {
+        if (block != null && !blockViews.Contains(block))
+        {
+            blockViews.Add(block);
         }
     }
 }

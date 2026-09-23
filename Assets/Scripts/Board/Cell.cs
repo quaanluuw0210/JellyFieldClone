@@ -45,4 +45,8 @@ public class Cell
             block = null;
         }
     }
+    public void ClearBlock()
+    {
+        block = null;
+    }
 }

@@ -15,11 +15,23 @@ public class JellyMesh : MonoBehaviour
     void Start()
     {
         MeshFilter meshFilter = GetComponent<MeshFilter>();
+        if (meshFilter == null || meshFilter.sharedMesh == null) return;
+
         OriginalMesh = meshFilter.sharedMesh;
 
-        // Nhân bản Mesh để không làm ảnh hưởng tới Prefab gốc
-        MeshClone = Instantiate(OriginalMesh);
-        meshFilter.sharedMesh = MeshClone;
+        // TẠO MESH MỚI HOÀN TOÀN ĐỂ MỞ QUYỀN GHI (READ/WRITE)
+        MeshClone = new Mesh();
+        MeshClone.name = OriginalMesh.name + "_JellyClone";
+
+        // Sao chép toàn bộ dữ liệu từ OriginalMesh sang MeshClone
+        MeshClone.vertices = OriginalMesh.vertices;
+        MeshClone.triangles = OriginalMesh.triangles;
+        MeshClone.uv = OriginalMesh.uv;
+        MeshClone.normals = OriginalMesh.normals;
+        MeshClone.tangents = OriginalMesh.tangents;
+
+        // Gán Mesh Clone mới có quyền ghi vào MeshFilter
+        meshFilter.mesh = MeshClone;
         meshRenderer = GetComponent<MeshRenderer>();
 
         // Khởi tạo các đỉnh biến dạng
