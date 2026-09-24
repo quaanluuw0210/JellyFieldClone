@@ -7,6 +7,16 @@ public static class MatchLogic
     public static event Action<JellyBlockBase, Block> OnSubBlockMatched;
     public static event Action<Block> OnBlockMatched;
 
+    private struct PendingMatchData
+    {
+        public Cell sourceCell;
+        public Cell neighborCell;
+        public Block sourceBlock;
+        public Block neighborBlock;
+        public List<JellyBlockBase> sourceMatches;
+        public List<JellyBlockBase> neighborMatches;
+    }
+
     /// <summary>
     /// Xử lý match cho MỘT đợt (wave) bắt đầu từ 1 tập vị trí seed.
     /// Không tự lặp chain bên trong nữa — chỉ quét các vị trí trong 'seedPositions'
@@ -32,6 +42,9 @@ public static class MatchLogic
             EnqueuePosition(pos, positionsToCheck, queuedPositions);
         }
 
+        List<PendingMatchData> pendingMatches = new List<PendingMatchData>();
+        Vector2Int[] directions = new Vector2Int[] { Vector2Int.left, Vector2Int.right, Vector2Int.down, Vector2Int.up };
+
         while (positionsToCheck.Count > 0)
         {
             Vector2Int position = positionsToCheck.Dequeue();
@@ -40,26 +53,25 @@ public static class MatchLogic
             if (sourceCell == null || !sourceCell.HasBlock()) continue;
 
             bool horizontalMatch = ProcessDirection(
-                gridSystem, sourceCell, Vector2Int.left, affectedBlocks, nextWaveSeeds);
+                gridSystem, sourceCell, Vector2Int.left, affectedBlocks, nextWaveSeeds,pendingMatches);
             horizontalMatch |= ProcessDirection(
-                gridSystem, sourceCell, Vector2Int.right, affectedBlocks, nextWaveSeeds);
-
-            if (horizontalMatch)
-            {
-                hasAnyMatch = true;
-                continue; // đã match ngang, KHÔNG check dọc thêm ở vị trí này trong cùng wave (giữ đúng rule cũ)
-            }
+                gridSystem, sourceCell, Vector2Int.right, affectedBlocks, nextWaveSeeds,pendingMatches);
 
             bool verticalMatch = ProcessDirection(
-                gridSystem, sourceCell, Vector2Int.down, affectedBlocks, nextWaveSeeds);
+                gridSystem, sourceCell, Vector2Int.down, affectedBlocks, nextWaveSeeds, pendingMatches);
             verticalMatch |= ProcessDirection(
-                gridSystem, sourceCell, Vector2Int.up, affectedBlocks, nextWaveSeeds);
+                gridSystem, sourceCell, Vector2Int.up, affectedBlocks, nextWaveSeeds, pendingMatches);
 
-            if (verticalMatch)
+            if (verticalMatch||horizontalMatch)
             {
                 hasAnyMatch = true;
+               
             }
         }
+        if(hasAnyMatch)
+        {
+            ExecuteMatch(gridSystem, pendingMatches, affectedBlocks, nextWaveSeeds);
+        }    
 
         return hasAnyMatch;
     }
@@ -69,7 +81,7 @@ public static class MatchLogic
         Cell sourceCell,
         Vector2Int direction,
         HashSet<Block> affectedBlocks,
-        HashSet<Vector2Int> nextWaveSeeds)
+        HashSet<Vector2Int> nextWaveSeeds, List<PendingMatchData> pendingMatches)
     {
         Vector2Int neighborPosition = sourceCell.GridPosition + direction;
         Cell neighborCell = gridSystem.GetCell(neighborPosition);
@@ -106,26 +118,51 @@ public static class MatchLogic
 
         if (sourceMatches.Count == 0) return false;
 
-        foreach (JellyBlockBase matchedSubBlock in sourceMatches)
-            OnSubBlockMatched?.Invoke(matchedSubBlock, sourceBlock);
 
-        foreach (JellyBlockBase matchedSubBlock in neighborMatches)
-            OnSubBlockMatched?.Invoke(matchedSubBlock, neighborBlock);
-
-        sourceBlock.RemoveSubBlocks(sourceMatches);
-        neighborBlock.RemoveSubBlocks(neighborMatches);
-        OnBlockMatched?.Invoke(sourceBlock);
-        OnBlockMatched?.Invoke(neighborBlock);
-
-        // Ghi nhận block bị ảnh hưởng để caller chờ animation
-        affectedBlocks.Add(sourceBlock);
-        affectedBlocks.Add(neighborBlock);
-
-        // Ghi nhận vùng cần quét lại ở wave KẾ TIẾP (sau khi animation xong)
-        AddAffectedAreaSeeds(gridSystem, sourceCell, nextWaveSeeds);
-        AddAffectedAreaSeeds(gridSystem, neighborCell, nextWaveSeeds);
-
+        pendingMatches.Add(new PendingMatchData
+            {
+                sourceCell = sourceCell,
+                neighborCell= neighborCell,
+                sourceBlock= sourceBlock,
+                neighborBlock= neighborBlock,
+                sourceMatches = sourceMatches,
+                neighborMatches = neighborMatches
+            }
+        );
+       
         return true;
+    }
+
+    private static void ExecuteMatch(GridSystem gridSystem,List<PendingMatchData> listPendingMatch, HashSet<Block> affectedBlocks,HashSet<Vector2Int> nextWaveSeeds)
+    {
+        foreach (PendingMatchData pendingMatch in listPendingMatch)
+        {
+            List<JellyBlockBase> sourceMatches = pendingMatch.sourceMatches;
+            List<JellyBlockBase> neighborMatches = pendingMatch.neighborMatches;
+            Block sourceBlock = pendingMatch.sourceBlock;
+            Block neighborBlock=pendingMatch.neighborBlock;
+            Cell sourceCell=pendingMatch.sourceCell;
+            Cell neighborCell=pendingMatch.neighborCell;
+
+            foreach (JellyBlockBase matchedSubBlock in sourceMatches)
+                OnSubBlockMatched?.Invoke(matchedSubBlock, sourceBlock);
+
+            foreach (JellyBlockBase matchedSubBlock in neighborMatches)
+                OnSubBlockMatched?.Invoke(matchedSubBlock, neighborBlock);
+
+            sourceBlock.RemoveSubBlocks(sourceMatches);
+            neighborBlock.RemoveSubBlocks(neighborMatches);
+            OnBlockMatched?.Invoke(sourceBlock);
+            OnBlockMatched?.Invoke(neighborBlock);
+
+            // Ghi nhận block bị ảnh hưởng để caller chờ animation
+            affectedBlocks.Add(sourceBlock);
+            affectedBlocks.Add(neighborBlock);
+
+            // Ghi nhận vùng cần quét lại ở wave KẾ TIẾP (sau khi animation xong)
+            AddAffectedAreaSeeds(gridSystem, sourceCell, nextWaveSeeds);
+            AddAffectedAreaSeeds(gridSystem, neighborCell, nextWaveSeeds);
+        }
     }
 
     private static void AddAffectedAreaSeeds(

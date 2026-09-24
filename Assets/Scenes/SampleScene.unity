@@ -159,7 +159,7 @@ Transform:
   m_GameObject: {fileID: 1623217}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2, y: 0, z: -3}
+  m_LocalPosition: {x: 0, y: 0, z: -3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1023,6 +1023,8 @@ MonoBehaviour:
   spawnView: {fileID: 1623218}
   levelDatas:
   - {fileID: 11400000, guid: 6f29f7e92305c9a49a592272f2fa21d5, type: 2}
+  - {fileID: 11400000, guid: afa79e18e40489d4781864a24e062991, type: 2}
+  - {fileID: 11400000, guid: 2c0c0d82f4849b24daf5829f813720d2, type: 2}
 --- !u!114 &1107045571
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1975,7 +1977,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1953310454536479574, guid: f597784e414f8674ea0c97255d0e4ff6, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1953310454536479574, guid: f597784e414f8674ea0c97255d0e4ff6, type: 3}
       propertyPath: m_LocalPosition.y
