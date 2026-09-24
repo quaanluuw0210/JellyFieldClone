@@ -6,6 +6,7 @@ public class PopUpUIManager : MonoBehaviour
     [SerializeField] private TMP_Text text;
     [SerializeField] private GameObject nextLevelButton;
     [SerializeField] private GameObject replayButton;
+    [SerializeField] private GameObject previousButton;
     [SerializeField] private GameObject popUpUI;
 
     void Start()
@@ -26,6 +27,7 @@ public class PopUpUIManager : MonoBehaviour
 
         nextLevelButton.SetActive(true); 
         replayButton.SetActive(true);    
+        previousButton.SetActive(true);
     }
 
     public void PlayLossUI()
@@ -35,7 +37,8 @@ public class PopUpUIManager : MonoBehaviour
         text.color = Color.red;   
 
         nextLevelButton.SetActive(false); 
-        replayButton.SetActive(true);     
+        replayButton.SetActive(true);
+        previousButton.SetActive(true);
     }
 
     public void OpenUI()

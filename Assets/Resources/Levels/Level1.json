@@ -22,25 +22,11 @@
   ],
   "spawn_queue": [
     {
-      "block_type": "FullBlock",
-      "TL": 5,
-      "TR": 5,
-      "BL": 5,
-      "BR": 5
-    },
-    {
-      "block_type": "FullBlock",
-      "TL": 4,
-      "TR": 4,
-      "BL": 4,
-      "BR": 4
-    },
-    {
       "block_type": "DoubleHor",
       "TL": 4,
       "TR": 4,
-      "BL": 0,
-      "BR": 0
+      "BL": 1,
+      "BR": 1
     },
     {
       "block_type": "FourBlock",
@@ -51,9 +37,9 @@
     },
     {
       "block_type": "DoubleVer",
-      "TL": 0,
+      "TL": 1,
       "TR": 2,
-      "BL": 0,
+      "BL": 1,
       "BR": 2
     },
     {

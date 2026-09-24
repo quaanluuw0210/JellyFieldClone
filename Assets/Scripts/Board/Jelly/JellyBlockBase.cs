@@ -44,8 +44,10 @@ public abstract class JellyBlockBase : MonoBehaviour
 
     protected virtual void Awake()
     {
-        
-        ApplyVisuals();
+        if (material != null)
+        {
+            ApplyVisuals();
+        }
     }
 
     protected virtual void Start()
@@ -71,18 +73,20 @@ public abstract class JellyBlockBase : MonoBehaviour
     {
         transform.localScale = blockScale;
 
-        if (material != null)
-        {
-            // 1. Gán Material cho Renderer
-            Renderer blockRenderer = GetComponentInChildren<Renderer>();
-            if (blockRenderer != null)
-            {
-                blockRenderer.sharedMaterial = material;
-            }
+        if (material == null) return;
 
-          
-            color = GetColorFromMaterial(material);
+     
+        Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
+        foreach (Renderer rend in renderers)
+        {
+            if (rend != null)
+            {
+                rend.sharedMaterial = material;
+                rend.enabled = true; 
+            }
         }
+
+        color = GetColorFromMaterial(material);
     }
 
     /// <summary>

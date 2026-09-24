@@ -18,6 +18,11 @@ public class GameCordinator : MonoBehaviour
         GameManager.instance.RestartLevel();
         UIManager.Instance.CloseUIWithNotGamePlay();
     }    
+    public void PlayPreviousLevel()
+    {
+        GameManager.instance.PlayPreviousLevel();
+        UIManager.Instance.CloseUIWithNotGamePlay();
+    }    
     public void PlayNextLevel()
     {
         GameManager.instance.NextLevel();
@@ -34,5 +39,9 @@ public class GameCordinator : MonoBehaviour
     public void BackToMainMenu()
     {
         UIManager.Instance.BackToMainMenu();
+        if(SoundManager.Instance!=null)
+        {
+            SoundManager.Instance.PlayMainMenuMusic();
+        }    
     }    
 }

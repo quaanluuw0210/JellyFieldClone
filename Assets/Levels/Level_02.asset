@@ -26,14 +26,6 @@ MonoBehaviour:
   - {x: 0, y: 3}
   - {x: 1, y: 3}
   activeSlotCount: 2
-  blockPrefabsSequence:
-  - {fileID: 140882862153467681, guid: cc38271705e53074e940d3b4fcd7529f, type: 3}
-  - {fileID: 8805890340940736078, guid: 1eece88d0fbcdcf46a744c17fdbc1111, type: 3}
-  - {fileID: 2169278785086185055, guid: 2634ada285796bf42bbfeef011604fed, type: 3}
-  - {fileID: 8084771339600217502, guid: 45ccacaf2a7b69f4382fdb0ee3811b31, type: 3}
-  placedBlocks:
-  - gridPosition: {x: 0, y: 1}
-    blockPrefab: {fileID: 5635659580456211390, guid: 2634ada285796bf42bbfeef011604fed, type: 3}
   targetScores:
-  - color: 0
+  - color: 5
     requiredScore: 8

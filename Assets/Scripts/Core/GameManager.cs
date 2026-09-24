@@ -60,12 +60,15 @@ public class GameManager : MonoBehaviour
     {
         if (levelDatas == null || levelDatas.Count == 0)
         {
+            levelIndex = 0;
             Debug.LogError("[GameManager] Danh sách levelDatas chưa được thiết lập!");
             return;
         }
 
         if (levelIndex < 0 || levelIndex >= levelDatas.Count)
         {
+             
+            levelIndex=0;
             Debug.LogWarning($"[GameManager] Index Level {levelIndex} vượt quá giới hạn. Đã hoàn thành tất cả Level!");
             return;
         }
@@ -105,6 +108,10 @@ public class GameManager : MonoBehaviour
             UIManager.Instance.SetUpUI(currentLevelData);
         } 
             
+        if(SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlayGameplayMusic();
+        }    
 
         Debug.Log($"[GameManager] Đã khởi tạo Level {currentLevelIndex + 1} thành công!");
     }
@@ -139,6 +146,12 @@ public class GameManager : MonoBehaviour
         LoadLevel(currentLevelIndex);
     }    
 
+   
+
+    public void PlayPreviousLevel()
+    {
+        LoadLevel(currentLevelIndex-1);
+    }    
     #endregion
 
     #region Event Handlers (Xử lý Game Rules)
@@ -198,6 +211,7 @@ public class GameManager : MonoBehaviour
         {
 
             UIManager.Instance.VictoryUI();
+            SoundManager.Instance.PlayWinSound();
         }
     }
 
@@ -208,6 +222,7 @@ public class GameManager : MonoBehaviour
             if(boardView.IsBoardFull()==true)
             {
                 UIManager.Instance.LossUI();
+                SoundManager.Instance.PlayLossSound();
             }    
         } 
             
@@ -245,6 +260,10 @@ public class GameManager : MonoBehaviour
                 boardView.RegisterPlacedBlock(block);
             }
 
+
+            if (SoundManager.Instance != null)
+                SoundManager.Instance.PlayDropSound();
+
             // c. Đăng ký dữ liệu vào Cell & Khóa không cho kéo thả nữa
             gridSystem.PlaceBlock(block, gridPos);
             block.InitializePlacedState(targetCell);
@@ -252,6 +271,7 @@ public class GameManager : MonoBehaviour
 
             // d. Thực hiện logic gộp màu (Match & Merge)
             StartCoroutine(RunMatchChain(gridPos));
+
         }
         else
         {

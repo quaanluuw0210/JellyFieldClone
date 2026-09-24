@@ -400,6 +400,12 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
                         ScoreManager.Instance.RemoveColorScore(subBlock.Color, 1);
                         
                         Destroy(subBlock.gameObject);
+
+                        if (SoundManager.Instance != null)
+                        {
+                            SoundManager.Instance.PlayJellyVFX();
+                        }
+
                     }
                 );
 

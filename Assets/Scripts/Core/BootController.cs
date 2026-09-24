@@ -45,5 +45,11 @@ public class BootController : MonoBehaviour
         {
             UIManager.Instance.BackToMainMenu();
         }
+
+        if(SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlayMainMenuMusic();
+        } 
+            
     }
 }
