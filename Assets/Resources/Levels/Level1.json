@@ -1,0 +1,102 @@
+{
+  "level": 1,
+  "board_setup": [
+    {
+      "x": 0,
+      "y": 0,
+      "block_type": "FullBlock",
+      "TL": 5,
+      "TR": 5,
+      "BL": 5,
+      "BR": 5
+    },
+    {
+      "x": 1,
+      "y": 0,
+      "block_type": "FullBlock",
+      "TL": 4,
+      "TR": 4,
+      "BL": 4,
+      "BR": 4
+    }
+  ],
+  "spawn_queue": [
+    {
+      "block_type": "FullBlock",
+      "TL": 5,
+      "TR": 5,
+      "BL": 5,
+      "BR": 5
+    },
+    {
+      "block_type": "FullBlock",
+      "TL": 4,
+      "TR": 4,
+      "BL": 4,
+      "BR": 4
+    },
+    {
+      "block_type": "DoubleHor",
+      "TL": 4,
+      "TR": 4,
+      "BL": 0,
+      "BR": 0
+    },
+    {
+      "block_type": "FourBlock",
+      "TL": 1,
+      "TR": 5,
+      "BL": 4,
+      "BR": 2
+    },
+    {
+      "block_type": "DoubleVer",
+      "TL": 0,
+      "TR": 2,
+      "BL": 0,
+      "BR": 2
+    },
+    {
+      "block_type": "OneDTwoS_Hor_Top",
+      "TL": 5,
+      "TR": 5,
+      "BL": 2,
+      "BR": 1
+    },
+    {
+      "block_type": "FourBlock",
+      "TL": 5,
+      "TR": 4,
+      "BL": 1,
+      "BR": 3
+    },
+    {
+      "block_type": "FullBlock",
+      "TL": 2,
+      "TR": 2,
+      "BL": 2,
+      "BR": 2
+    },
+    {
+      "block_type": "DoubleHor",
+      "TL": 5,
+      "TR": 5,
+      "BL": 2,
+      "BR": 2
+    },
+    {
+      "block_type": "FullBlock",
+      "TL": 1,
+      "TR": 1,
+      "BL": 1,
+      "BR": 1
+    },
+    {
+      "block_type": "DoubleHor",
+      "TL": 2,
+      "TR": 2,
+      "BL": 5,
+      "BR": 5
+    }
+  ]
+}

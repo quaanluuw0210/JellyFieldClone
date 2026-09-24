@@ -2,20 +2,40 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
+public class BoardCellData
+{
+    public int x;
+    public int y;
+    public string block_type;
+    public int TL;
+    public int TR;
+    public int BL;
+    public int BR;
+}
+
+[System.Serializable]
+public class SpawnBlockData
+{
+    public string block_type;
+    public int TL;
+    public int TR;
+    public int BL;
+    public int BR;
+}
+
+[System.Serializable]
+public class LevelConfig
+{
+    public int level;
+    public List<BoardCellData> board_setup = new List<BoardCellData>();
+    public List<SpawnBlockData> spawn_queue = new List<SpawnBlockData>();
+}
+
+[System.Serializable]
 public struct LevelTargetScore
 {
     public JellyColor color;
     public int requiredScore;
-}
-
-[System.Serializable]
-public struct PlacedBlockData
-{
-    [Tooltip("Vị trí đặt Block trên bàn cờ")]
-    public Vector2Int gridPosition;
-
-    [Tooltip("Prefab Block tương ứng sẽ xuất hiện tại vị trí này")]
-    public Block blockPrefab;
 }
 
 [CreateAssetMenu(fileName = "Level_01", menuName = "Jelly Game/Level Data")]
@@ -28,14 +48,6 @@ public class LevelData : ScriptableObject
     [Tooltip("Số lượng Slot hiển thị ở khay spawn")]
     [Range(1, 4)]
     public int activeSlotCount = 3;
-
-    [Header("Block Prefabs Sequence")]
-    [Tooltip("Kéo trực tiếp các Prefab Block vào đây theo thứ tự sẽ xuất hiện")]
-    public List<GameObject> blockPrefabsSequence = new List<GameObject>();
-
-    [Header("Pre-placed Blocks")]
-    [Tooltip("Danh sách các Block được sinh sẵn trên bàn cờ khi bắt đầu màn")]
-    public List<PlacedBlockData> placedBlocks = new List<PlacedBlockData>();
 
     [Header("Level Target Scores")]
     [Tooltip("Danh sách màu và số điểm cần đạt để thắng màn này")]

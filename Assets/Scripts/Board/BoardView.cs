@@ -15,6 +15,7 @@ public class BoardView : MonoBehaviour
 
     [Header("Prefabs")]
     [SerializeField] private GameObject cellPrefab;
+    [SerializeField] private BlockFactory blockFactory;
 
 
     private readonly Dictionary<Vector2Int, GameObject> cellViews =
@@ -93,6 +94,33 @@ public class BoardView : MonoBehaviour
         return blockView;
     }
 
+    public Block SpawnBlockAt(BoardCellData blockData)
+    {
+        if (blockData == null || blockFactory == null || gridSystem == null) return null;
+
+        Vector2Int gridPos = new Vector2Int(blockData.x, blockData.y);
+        if (!gridSystem.IsValidPosition(gridPos)) return null;
+
+        Cell cell = gridSystem.GetCell(gridPos);
+        if (cell == null || cell.HasBlock()) return null;
+
+        Block blockView = blockFactory.Create(blockData);
+        if (blockView == null) return null;
+
+        Vector3 spawnPosition = GetWorldPositionForCell(gridPos) + Vector3.up * 0.1f;
+        blockView.transform.SetParent(transform);
+        blockView.transform.position = spawnPosition;
+        blockView.name = string.Format("Block_{0}_{1}", gridPos.x, gridPos.y);
+        blockView.InitializePlacedState(cell);
+        blockView.SetPlaced(true);
+
+        GameManager gameManager = FindFirstObjectByType<GameManager>();
+        if (gameManager != null) blockView.OnBlockDropped += gameManager.HandleBlockDropped;
+
+        blockViews.Add(blockView);
+        return blockView;
+    }
+
     public Vector3 GetWorldPositionForCell(Vector2Int gridPos)
     {
         return gridSystem.GetWorldPosition(gridPos);
@@ -149,7 +177,7 @@ public class BoardView : MonoBehaviour
         }
     }
 
-    public void InitializeBoard(LevelData levelData)
+    public void InitializeBoard(LevelData levelData, List<BoardCellData> boardSetup)
     {
         if (levelData == null || gridSystem == null) return;
         ClearBoardVisuals();
@@ -160,16 +188,12 @@ public class BoardView : MonoBehaviour
         // 2. Sinh Visual cho các Cell
         GenerateBoardVisuals();
 
-        // 3. Sinh các Block được đặt sẵn theo LevelData
-        if (levelData.placedBlocks != null)
+        // 3. Sinh các Block đặt sẵn từ JSON thông qua BlockFactory.
+        if (boardSetup != null)
         {
-            foreach (var placedData in levelData.placedBlocks)
+            foreach (BoardCellData blockData in boardSetup)
             {
-                Debug.Log($"[InitializeBoard] xét placedData tại {placedData.gridPosition}, prefab = {placedData.blockPrefab}");
-                if (placedData.blockPrefab != null)
-                {
-                    SpawnBlockAt(placedData.gridPosition, placedData.blockPrefab);
-                }
+                SpawnBlockAt(blockData);
             }
         }
     }

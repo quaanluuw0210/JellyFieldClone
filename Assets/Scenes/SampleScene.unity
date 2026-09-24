@@ -150,6 +150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpawnView
   slotSpacing: 1.5
   cellPrefab: {fileID: 1822025829048321520, guid: 3195c3b9ec57e6148a49d3551ac5ceb1, type: 3}
+  blockFactory: {fileID: 779558064}
 --- !u!4 &1623219
 Transform:
   m_ObjectHideFlags: 0
@@ -623,6 +624,58 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PauseGameUI
   pauseGameUI: {fileID: 1872318791}
+--- !u!1 &779558063
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 779558065}
+  - component: {fileID: 779558064}
+  m_Layer: 0
+  m_Name: BlockFactory
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &779558064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 779558063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22cb903ece56a1e4b922a0c34d7f77d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BlockFactory
+  fullBlockPrefab: {fileID: 127953997140016289, guid: f310bdd187859b045a2ec9bf5d5ca30e, type: 3}
+  doubleHorizontalPrefab: {fileID: 5085520754908721666, guid: 45ccacaf2a7b69f4382fdb0ee3811b31, type: 3}
+  doubleVerticalPrefab: {fileID: 353107740607394262, guid: 2e7c8f980258ed647a6596f56d7de768, type: 3}
+  fourBlockPrefab: {fileID: 3895857248710909694, guid: 83b5998785c18c04b8ad06a52e604a6b, type: 3}
+  oneDTwoSHorizontalTopPrefab: {fileID: 2941520580553701352, guid: cffb2405cda519347953fada2489df14, type: 3}
+  oneDTwoSHorizontalBottomPrefab: {fileID: 2034604503760644886, guid: db965509e5729af429e5b406bf345350, type: 3}
+  oneDTwoSVerticalLeftPrefab: {fileID: 2770455920327493754, guid: a5c561eb38d2c7f4989c31718495cc77, type: 3}
+  oneDTwoSVerticalRightPrefab: {fileID: 1919399407622262124, guid: 1147a1fd0906f6145a824a08badd556b, type: 3}
+--- !u!4 &779558065
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 779558063}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1107045572}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -956,6 +1009,10 @@ MonoBehaviour:
     material: {fileID: 2100000, guid: a75edac506259b044934d53ba8c7c994, type: 2}
   - color: 1
     material: {fileID: 2100000, guid: 78c59b568db7f744099993999d24206f, type: 2}
+  - color: 4
+    material: {fileID: 2100000, guid: e21d0fc3ef49332479e80d3978fd3f93, type: 2}
+  - color: 5
+    material: {fileID: 2100000, guid: f26a1a19c01496148a0cd1305c34ca34, type: 2}
 --- !u!4 &1017040751
 Transform:
   m_ObjectHideFlags: 0
@@ -1025,6 +1082,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6f29f7e92305c9a49a592272f2fa21d5, type: 2}
   - {fileID: 11400000, guid: afa79e18e40489d4781864a24e062991, type: 2}
   - {fileID: 11400000, guid: 2c0c0d82f4849b24daf5829f813720d2, type: 2}
+  useJsonLevels: 1
+  jsonActiveSlotCount: 3
 --- !u!114 &1107045571
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1039,6 +1098,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BoardView
   gridSystem: {fileID: 1107045569}
   cellPrefab: {fileID: 1822025829048321520, guid: 3195c3b9ec57e6148a49d3551ac5ceb1, type: 3}
+  blockFactory: {fileID: 779558064}
 --- !u!4 &1107045572
 Transform:
   m_ObjectHideFlags: 0
@@ -1055,6 +1115,7 @@ Transform:
   - {fileID: 1017040751}
   - {fileID: 1917723295}
   - {fileID: 322508140}
+  - {fileID: 779558065}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1107045573

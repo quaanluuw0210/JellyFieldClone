@@ -80,15 +80,24 @@ public class GameManager : MonoBehaviour
         }
 
         // 2. Khởi tạo Bàn cờ và các Block đặt sẵn
+
+        LevelConfig levelConfig = LevelLoader.LoadLevel(levelIndex + 1);
+        if (levelConfig == null)
+        {
+            Debug.LogError(string.Format(
+                "[GameManager] Không thể tải JSON cho level index {0}. Không spawn level.",
+                levelIndex));
+            return;
+        }
         if (boardView != null)
         {
-            boardView.InitializeBoard(currentLevelData);
+            boardView.InitializeBoard(currentLevelData, levelConfig.board_setup);
         }
 
         // 3. Khởi tạo Khay Spawn và chuỗi Block chờ spawn
         if (spawnView != null)
         {
-            spawnView.InitializeSpawn(currentLevelData.activeSlotCount, currentLevelData.blockPrefabsSequence);
+            spawnView.InitializeSpawn(currentLevelData.activeSlotCount, levelConfig.spawn_queue);
         }
 
         if(UIManager.Instance != null)

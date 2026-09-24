@@ -9,13 +9,14 @@ public class SpawnView : MonoBehaviour
 
     [Header("Prefabs")]
     [SerializeField] private GameObject cellPrefab;
+    [SerializeField] private BlockFactory blockFactory;
 
 
     // slotViews[i] quản lý visual của ô slot, đi kèm thông tin Block đang nằm trên Slot đó
     private readonly List<GameObject> slotViews = new List<GameObject>();
     private readonly List<Block> activeSpawnBlocks = new List<Block>();
 
-    private readonly List<GameObject> blockSequenceList = new List<GameObject>();
+    private readonly List<SpawnBlockData> blockSequenceList = new List<SpawnBlockData>();
     private int currentBlockIndex = 0;
 
     public IReadOnlyList<Block> SpawnBlocks => activeSpawnBlocks;
@@ -28,19 +29,20 @@ public class SpawnView : MonoBehaviour
     /// <summary>
     /// Khởi tạo khu vực Spawn từ dữ liệu LevelData
     /// </summary>
-    public void InitializeSpawn(int activeSlotCount, List<GameObject> blockSequence)
+    public void InitializeSpawn(int activeSlotCount, List<SpawnBlockData> blockSequence)
     {
         ClearSpawnVisuals();
         blockSequenceList.Clear();
+        currentBlockIndex = 0;
 
         // 1. Đẩy danh sách Block vào Hàng chờ (Queue)
         if (blockSequence != null)
         {
-            foreach (var prefab in blockSequence)
+            foreach (SpawnBlockData blockData in blockSequence)
             {
-                if (prefab != null)
+                if (blockData != null)
                 {
-                    blockSequenceList.Add(prefab);
+                    blockSequenceList.Add(blockData);
                 }
             }
         }
@@ -62,14 +64,16 @@ public class SpawnView : MonoBehaviour
         for (int i = 0; i < slotViews.Count; i++)
         {
            
-            if (activeSpawnBlocks[i] == null && blockSequenceList.Count > 0)
+            if (activeSpawnBlocks[i] != null) continue;
+
+            if (blockSequenceList.Count > 0)
             {
-                GameObject nextBlockPrefab = blockSequenceList[currentBlockIndex % blockSequenceList.Count];
+                SpawnBlockData nextBlockData = blockSequenceList[currentBlockIndex % blockSequenceList.Count];
 
                 currentBlockIndex++;
-                if (nextBlockPrefab != null)
+                if (nextBlockData != null)
                 {
-                    Block spawnedBlock = SpawnBlockAtSlot(i, nextBlockPrefab);
+                    Block spawnedBlock = SpawnBlockAtSlot(i, nextBlockData);
                     activeSpawnBlocks[i] = spawnedBlock;
                 }
             }
@@ -115,18 +119,19 @@ public class SpawnView : MonoBehaviour
         }
     }
 
-    private Block SpawnBlockAtSlot(int slotIndex, GameObject blockPrefabObj)
+    private Block SpawnBlockAtSlot(int slotIndex, SpawnBlockData blockData)
     {
-        if (blockPrefabObj == null) return null;
+        if (blockData == null || blockFactory == null) return null;
 
         Vector3 spawnPosition = GetSlotWorldPosition(slotIndex);
         spawnPosition += Vector3.up * 0.1f;
 
-        GameObject instantiatedObj = Instantiate(blockPrefabObj, spawnPosition, Quaternion.identity, transform);
-        Block blockView = instantiatedObj.GetComponent<Block>();
+        Block blockView = blockFactory.Create(blockData);
 
         if (blockView != null)
         {
+            blockView.transform.SetParent(transform);
+            blockView.transform.position = spawnPosition;
             blockView.name = string.Format("SpawnBlock_{0}", slotIndex);
 
             GameManager gameManager = FindFirstObjectByType<GameManager>();
@@ -140,6 +145,7 @@ public class SpawnView : MonoBehaviour
 
         return blockView;
     }
+
 
     public Vector3 GetSlotWorldPosition(int slotIndex)
     {

@@ -8,7 +8,7 @@ public enum JellyColor
     Green,
     Yellow,
     Purple,
-    Orange
+    Pink
 }
 
 public static class JellyColorExtensions
@@ -22,7 +22,7 @@ public static class JellyColorExtensions
             JellyColor.Green => Color.green,           // hoặc new Color(0.2f, 0.8f, 0.2f)
             JellyColor.Yellow => Color.yellow,          // hoặc new Color(1.0f, 0.9f, 0.1f)
             JellyColor.Purple => new Color(0.6f, 0.1f, 0.8f), // Tím
-            JellyColor.Orange => new Color(1.0f, 0.5f, 0.0f), // Cam
+            JellyColor.Pink => new Color(1.0f, 0.41f, 0.71f), // Hồng
             _ => Color.white
         };
     }
@@ -97,7 +97,7 @@ public abstract class JellyBlockBase : MonoBehaviour
         if (matName.Contains("green")) return JellyColor.Green;
         if (matName.Contains("yellow")) return JellyColor.Yellow;
         if (matName.Contains("purple")) return JellyColor.Purple;
-        if (matName.Contains("orange")) return JellyColor.Orange;
+        if (matName.Contains("pink")) return JellyColor.Pink;
 
         return color; 
     }
