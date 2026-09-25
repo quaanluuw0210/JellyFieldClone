@@ -143,10 +143,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5e8cf665e2ea014db70f5bbbe518c73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JellyMesh
-  Intensity: 1
-  Mass: 1
-  stiffness: 1
-  damping: 0.75
 --- !u!114 &2083923470485335529
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -302,10 +298,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5e8cf665e2ea014db70f5bbbe518c73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JellyMesh
-  Intensity: 1
-  Mass: 1
-  stiffness: 1
-  damping: 0.75
 --- !u!114 &2379277368742553191
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -461,10 +453,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5e8cf665e2ea014db70f5bbbe518c73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JellyMesh
-  Intensity: 1
-  Mass: 1
-  stiffness: 1
-  damping: 0.75
 --- !u!114 &8603236760176337900
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -716,10 +704,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5e8cf665e2ea014db70f5bbbe518c73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JellyMesh
-  Intensity: 1
-  Mass: 1
-  stiffness: 1
-  damping: 0.75
 --- !u!114 &4567612633305846800
 MonoBehaviour:
   m_ObjectHideFlags: 0

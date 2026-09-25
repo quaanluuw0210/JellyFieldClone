@@ -2,10 +2,10 @@
 
 public class JellyMesh : MonoBehaviour
 {
-    public float Intensity = 1f;
-    public float Mass = 1f;
-    public float stiffness = 1f;
-    public float damping = 0.75f;
+    private float Intensity = 0.45f;
+    private float Mass = 1.3f;
+    private float stiffness = 0.8f;
+    private float damping = 0.88f;
 
     private Mesh OriginalMesh, MeshClone;
     private MeshRenderer meshRenderer;
