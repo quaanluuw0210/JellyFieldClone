@@ -7,7 +7,6 @@ public class GameManager : MonoBehaviour
     [Header("System References")]
     [SerializeField] private GridSystem gridSystem;
     [SerializeField] private BoardView boardView;
-    [SerializeField] private InputController inputController;
     [SerializeField] private SpawnView spawnView;
 
     [Header("Level Configurations")]
@@ -19,19 +18,9 @@ public class GameManager : MonoBehaviour
 
     public static GameManager instance; 
 
-    private void OnEnable()
-    {
-        // Đăng ký lắng nghe các Event từ InputController
-        InputController.OnBlockSelected += HandleBlockSelected;
+   
 
-    }
-
-    private void OnDisable()
-    {
-        // Hủy đăng ký Event để tránh Memory Leak
-        InputController.OnBlockSelected -= HandleBlockSelected;
-      
-    }
+   
 
     private void Start()
     {
