@@ -131,6 +131,8 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
 
     public void OnPointerDown(PointerEventData eventData)
     {
+        if (GameManager.instance != null && GameManager.instance.IsMatching) return;
+
         if (isDragging || gridSystem == null) return;
 
         if(isPlaced)
@@ -166,6 +168,10 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
 
     public void OnDrag(PointerEventData eventData)
     {
+
+
+        if (GameManager.instance != null && GameManager.instance.IsMatching) return;
+
         if (!isDragging || mainCamera == null) return;
 
         if (isPlaced)
@@ -217,8 +223,22 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
         // Nếu kéo ra ngoài bàn cờ hoặc kéo đè lên ô đã có khối khác -> Ẩn khung
         GridHighlightManager.Instance?.HideHighlight();
     }
+
+    public void CancelDrag()
+    {
+        if (!isDragging) return;
+
+        GridHighlightManager.Instance?.HideHighlight();
+        isDragging = false;
+
+       
+        ReturnToOriginalPosition();
+    }
+
     public void OnPointerUp(PointerEventData eventData)
     {
+      
+
         if (!isDragging) return;
 
         if (isPlaced)

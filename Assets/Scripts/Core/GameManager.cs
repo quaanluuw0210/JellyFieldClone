@@ -12,8 +12,8 @@ public class GameManager : MonoBehaviour
     [Header("Level Configurations")]
     [SerializeField] private List<LevelData> levelDatas;
     private int currentLevelIndex = 0;
-
-    private Block selectedBlock;
+    private bool isMatching = false;
+    public bool IsMatching => isMatching;
 
 
     public static GameManager instance; 
@@ -145,15 +145,10 @@ public class GameManager : MonoBehaviour
 
     #region Event Handlers (Xử lý Game Rules)
 
-    private void HandleBlockSelected(Block block)
-    {
-        selectedBlock = block;
-        Debug.Log($"[GameManager] Đã chọn Block: {block.name}");
-    }
-
     
     private IEnumerator RunMatchChain(Vector2Int startPos)
     {
+        isMatching = true;
         HashSet<Vector2Int> currentSeeds = new HashSet<Vector2Int> { startPos };
         bool anyMatchInChain = false;
 
@@ -188,7 +183,7 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log("[GameManager] Gộp màu thành công (chain hoàn tất)!");
         }
-
+        isMatching = false; 
         // Sau khi kết thúc chuỗi Match, kiểm tra xem người chơi đã thắng chưa
         CheckWinCondition();
         CheckLossCondition();
