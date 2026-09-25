@@ -384,7 +384,17 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
     {
         bool fullJellyMatched = IsFullJelly && subBlocksToRemove.Contains(subBlocks[0]);
         HashSet<JellyBlockBase> uniqueBlocks = new HashSet<JellyBlockBase>(subBlocksToRemove);
-       
+
+  
+        List<Vector3> removedLocalPositions = new List<Vector3>();
+        foreach (var sub in uniqueBlocks)
+        {
+            if (sub != null)
+            {
+                removedLocalPositions.Add(sub.transform.localPosition);
+            }
+        }
+
         List<Tween> fadeTweens = new List<Tween>();
         foreach (JellyBlockBase subBlock in uniqueBlocks)
         {
@@ -394,25 +404,23 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
             Tween t = subBlock.transform.DOScale(Vector3.zero, 0.2f)
                 .SetEase(Ease.InBack)
                 .OnComplete(() =>
+                {
+                    PlayMorphVFX(subBlock.transform.position, subBlock.Color.ToUnityColor());
+
+                    ScoreManager.Instance?.RemoveColorScore(subBlock.Color, 1);
+
+                    Destroy(subBlock.gameObject);
+
+                    if (SoundManager.Instance != null)
                     {
-                        PlayMorphVFX(subBlock.transform.position, subBlock.Color.ToUnityColor());
-
-                        ScoreManager.Instance.RemoveColorScore(subBlock.Color, 1);
-                        
-                        Destroy(subBlock.gameObject);
-
-                        if (SoundManager.Instance != null)
-                        {
-                            SoundManager.Instance.PlayJellyVFX();
-                        }
-
+                        SoundManager.Instance.PlayJellyVFX();
                     }
+                }
                 );
 
             fadeTweens.Add(t);
         }
 
-       
         foreach (var t in fadeTweens)
         {
             if (t.IsActive()) yield return t.WaitForCompletion();
@@ -428,9 +436,45 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
             yield break;
         }
 
+      
+        SortSubBlocksByZPriority(removedLocalPositions, subBlocks);
+
         yield return StartCoroutine(RecoverShapeCoroutine());
     }
+    /// <summary>
+    /// Sắp xếp ưu tiên cho khối 2x2 khi bị xóa ĐÚNG 1 ô (còn 3 ô):
+    /// Đẩy ô nằm CÙNG HÀNG NGANG (cùng Z) với ô vừa xóa lên đầu list (Index 0).
+    /// </summary>
+    public void SortSubBlocksByZPriority(List<Vector3> removedLocalPositions, List<JellyBlockBase> remainingBlocks)
+    {
+      
+        if (removedLocalPositions == null || removedLocalPositions.Count != 1 || remainingBlocks == null || remainingBlocks.Count != 3)
+            return;
 
+        Vector3 removedPos = removedLocalPositions[0];
+        const float zTolerance = 0.1f;
+
+    
+        remainingBlocks.Sort((a, b) =>
+        {
+            if (a == null || b == null) return 0;
+
+            float diffZ_A = Mathf.Abs(a.transform.localPosition.z - removedPos.z);
+            float diffZ_B = Mathf.Abs(b.transform.localPosition.z - removedPos.z);
+
+            bool isAOnSameZ = diffZ_A <= zTolerance;
+            bool isBOnSameZ = diffZ_B <= zTolerance;
+
+            if (isAOnSameZ && !isBOnSameZ) return -1;
+            if (!isAOnSameZ && isBOnSameZ) return 1;
+
+        
+            float diffX_A = Mathf.Abs(a.transform.localPosition.x - removedPos.x);
+            float diffX_B = Mathf.Abs(b.transform.localPosition.x - removedPos.x);
+
+            return diffX_A.CompareTo(diffX_B);
+        });
+    }
     private IEnumerator RecoverShapeCoroutine()
     {
         if (spreadManager == null)
@@ -441,14 +485,13 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
             Debug.LogWarning($"[Block {name}] Không tìm thấy BlockSpreadManager.", this);
             yield break;
         }
-
+      
         List<JellyBlockBase> updated = null;
-        bool done = false;
+     
 
         yield return StartCoroutine(spreadManager.RecoverShapeRoutine(subBlocks, (result) =>
         {
             updated = result;
-            done = true;
         }));
 
         if (updated != null && updated.Count > 0)
@@ -538,7 +581,7 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
 
         if (vfxInstance.TryGetComponent<ParticleSystem>(out var ps))
         {
-
+                
             var main = ps.main;
             main.startColor = color;
 

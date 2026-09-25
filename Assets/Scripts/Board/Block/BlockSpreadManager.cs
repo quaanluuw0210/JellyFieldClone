@@ -64,78 +64,79 @@ public class BlockSpreadManager : MonoBehaviour
         onAllComplete?.Invoke(result);
     }
 
-   
 
 
 
-    // --- EXPAND: SINGLE -> DOUBLE ---
+
+    // --- EXPAND: SINGLE -> DOUBLE (ĐÃ SỬA: ƯU TIÊN THEO THỨ TỰ CỦA LIST BLOCKS) ---
     private bool TryExpandSingleToDouble(List<JellyBlockBase> blocks, Action onStepComplete, out bool animTriggered)
     {
-
         animTriggered = false;
 
-        for (int x = 0; x < 2; x++)
+        // BỚT VÒNG LẶP FOR CỐ ĐỊNH -> DUYỆT TRỰC TIẾP THEO THỨ TỰ TRONG LIST BLOCKS ĐÃ DỰNG/SORT!
+        foreach (JellyBlockBase jelly in blocks)
         {
-            for (int y = 0; y < 2; y++)
+            if (jelly is JellySingleBlock single && single != null)
             {
-                if (gridSlots[x, y] is JellySingleBlock single && single != null)
+                // Lấy vị trí tọa độ Slot (x, y) của single block này trong gridSlots
+                Vector2Int slot = GetNearestSlot(single.transform.localPosition);
+                int x = slot.x;
+                int y = slot.y;
+
+                // Kiểm tra xem ô này có thực sự chứa single block này không
+                if (gridSlots[x, y] != single) continue;
+
+                foreach (Vector2Int dir in GetPriorityDirections())
                 {
-                    foreach (Vector2Int dir in GetPriorityDirections())
+                    Vector2Int target = new Vector2Int(x, y) + dir;
+                    if (IsValidSlot(target.x, target.y) && gridSlots[target.x, target.y] == null)
                     {
-                        Vector2Int target = new Vector2Int(x, y) + dir;
-                        if (IsValidSlot(target.x, target.y) && gridSlots[target.x, target.y] == null)
-                        {
+                        bool isHorizontal = dir.x != 0;
 
+                        // 1. TÍNH VỊ TRÍ MIDPOINT CHUẨN ĐỂ ĐẶT KHỐI DOUBLE
+                        Vector3 midLocalPos = GetMidSlotLocalPosition(x, y, target.x, target.y);
+                        midLocalPos.y += 0.25f; // Offset Y
 
-                            bool isHorizontal = dir.x != 0;
+                        JellyColor color = single.Color;
+                        JellyType type = isHorizontal ? JellyType.DoubleHorizontal : JellyType.DoubleVertical;
 
-                            // 1. TÍNH VỊ TRÍ MIDPOINT CHUẨN ĐỂ ĐẶT KHỐI DOUBLE
-                            Vector3 midLocalPos = GetMidSlotLocalPosition(x, y, target.x, target.y);
-                            midLocalPos.y += 0.25f; // Offset Y nếu có
+                        Transform parentTransform = single.transform.parent;
+                        Vector3 midWorldPos = parentTransform != null
+                            ? parentTransform.TransformPoint(midLocalPos)
+                            : transform.TransformPoint(midLocalPos);
 
-                            JellyColor color = single.Color;
-                            Material mat = JellyFactory.Instance.GetMaterialForColor(color);
-                            JellyType type = isHorizontal ? JellyType.DoubleHorizontal : JellyType.DoubleVertical;
-
-                            Transform parentTransform = single.transform.parent;
-                            Vector3 midWorldPos = parentTransform != null
-                                ? parentTransform.TransformPoint(midLocalPos)
-                                : transform.TransformPoint(midLocalPos);
-
-                        
-
-                            JellyBlockBase newDouble = JellyFactory.Instance.CreateJelly(
+                        JellyBlockBase newDouble = JellyFactory.Instance.CreateJelly(
                             type,
                             midWorldPos,
                             single.transform.rotation,
                             parentTransform != null ? parentTransform : transform);
 
-                            newDouble.SetMaterial(JellyFactory.Instance.GetMaterialForColor(single.Color));
+                        if (newDouble == null) return false;
 
-                            newDouble.transform.localPosition = midLocalPos;
-                            newDouble.SetMaterial(JellyFactory.Instance.GetMaterialForColor(color));
+                        newDouble.SetMaterial(JellyFactory.Instance.GetMaterialForColor(color));
+                        newDouble.transform.localPosition = midLocalPos;
 
-                            blocks.Remove(single);
-                            blocks.Add(newDouble);
-                            gridSlots[x, y] = newDouble;
-                            gridSlots[target.x, target.y] = newDouble;
+                        blocks.Remove(single);
+                        blocks.Add(newDouble);
+                        gridSlots[x, y] = newDouble;
+                        gridSlots[target.x, target.y] = newDouble;
 
-                  
-                            if (newDouble.SpreadAnim != null)
-                            {
-                                newDouble.SpreadAnim.MorphSingleToDouble(single, newDouble, new Vector2Int(x, y), target, onStepComplete);
-                            }
-                            else
-                            {
-                                Destroy(single.gameObject);
-                            }
-
-                            return true;
+                        if (newDouble.SpreadAnim != null)
+                        {
+                            animTriggered = true;
+                            newDouble.SpreadAnim.MorphSingleToDouble(single, newDouble, new Vector2Int(x, y), target, onStepComplete);
                         }
+                        else
+                        {
+                            Destroy(single.gameObject);
+                        }
+
+                        return true; // Thực hiện thành công cho block ưu tiên đầu tiên!
                     }
                 }
             }
         }
+
         return false;
     }
 

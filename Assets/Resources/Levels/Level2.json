@@ -46,10 +46,10 @@
         },
     {
             "block_type": "DoubleHor",
-            "TL": 2,
-            "TR": 2,
-            "BL": 3,
-            "BR": 3
+            "TL": 3,
+            "TR": 3,
+            "BL": 2,
+            "BR": 2
         },
         {
             "block_type": "DoubleHor",

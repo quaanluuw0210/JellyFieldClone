@@ -133,38 +133,55 @@ public static class MatchLogic
         return true;
     }
 
-    private static void ExecuteMatch(GridSystem gridSystem,List<PendingMatchData> listPendingMatch, HashSet<Block> affectedBlocks,HashSet<Vector2Int> nextWaveSeeds)
+    private static void ExecuteMatch(
+     GridSystem gridSystem,
+     List<PendingMatchData> listPendingMatch,
+     HashSet<Block> affectedBlocks,
+     HashSet<Vector2Int> nextWaveSeeds)
     {
+        // 1. Dùng Dictionary để GOM TẤT CẢ sub-block cần xóa của từng Block
+        Dictionary<Block, HashSet<JellyBlockBase>> blocksToMatchMap = new Dictionary<Block, HashSet<JellyBlockBase>>();
+
         foreach (PendingMatchData pendingMatch in listPendingMatch)
         {
-            List<JellyBlockBase> sourceMatches = pendingMatch.sourceMatches;
-            List<JellyBlockBase> neighborMatches = pendingMatch.neighborMatches;
             Block sourceBlock = pendingMatch.sourceBlock;
-            Block neighborBlock=pendingMatch.neighborBlock;
-            Cell sourceCell=pendingMatch.sourceCell;
-            Cell neighborCell=pendingMatch.neighborCell;
+            Block neighborBlock = pendingMatch.neighborBlock;
 
-            foreach (JellyBlockBase matchedSubBlock in sourceMatches)
-                OnSubBlockMatched?.Invoke(matchedSubBlock, sourceBlock);
+            // Gom cho sourceBlock
+            if (!blocksToMatchMap.ContainsKey(sourceBlock))
+                blocksToMatchMap[sourceBlock] = new HashSet<JellyBlockBase>();
+            foreach (var sub in pendingMatch.sourceMatches)
+                blocksToMatchMap[sourceBlock].Add(sub);
 
-            foreach (JellyBlockBase matchedSubBlock in neighborMatches)
-                OnSubBlockMatched?.Invoke(matchedSubBlock, neighborBlock);
+            // Gom cho neighborBlock
+            if (!blocksToMatchMap.ContainsKey(neighborBlock))
+                blocksToMatchMap[neighborBlock] = new HashSet<JellyBlockBase>();
+            foreach (var sub in pendingMatch.neighborMatches)
+                blocksToMatchMap[neighborBlock].Add(sub);
 
-            sourceBlock.RemoveSubBlocks(sourceMatches);
-            neighborBlock.RemoveSubBlocks(neighborMatches);
-            OnBlockMatched?.Invoke(sourceBlock);
-            OnBlockMatched?.Invoke(neighborBlock);
+            // Ghi nhận vùng bị ảnh hưởng
+            AddAffectedAreaSeeds(gridSystem, pendingMatch.sourceCell, nextWaveSeeds);
+            AddAffectedAreaSeeds(gridSystem, pendingMatch.neighborCell, nextWaveSeeds);
+        }
 
-            // Ghi nhận block bị ảnh hưởng để caller chờ animation
-            affectedBlocks.Add(sourceBlock);
-            affectedBlocks.Add(neighborBlock);
+        // 2. THỰC THI THẬT: Mỗi Block chỉ gọi RemoveSubBlocks ĐÚNG 1 LẦN cho toàn bộ sub-block bị trùng!
+        foreach (var kvp in blocksToMatchMap)
+        {
+            Block block = kvp.Key;
+            List<JellyBlockBase> uniqueMatches = new List<JellyBlockBase>(kvp.Value);
 
-            // Ghi nhận vùng cần quét lại ở wave KẾ TIẾP (sau khi animation xong)
-            AddAffectedAreaSeeds(gridSystem, sourceCell, nextWaveSeeds);
-            AddAffectedAreaSeeds(gridSystem, neighborCell, nextWaveSeeds);
+            foreach (JellyBlockBase matchedSubBlock in uniqueMatches)
+            {
+                OnSubBlockMatched?.Invoke(matchedSubBlock, block);
+            }
+
+            // Gọi xóa duy nhất 1 lần cho cả khối!
+            block.RemoveSubBlocks(uniqueMatches);
+            OnBlockMatched?.Invoke(block);
+
+            affectedBlocks.Add(block);
         }
     }
-
     private static void AddAffectedAreaSeeds(
         GridSystem gridSystem, Cell cell, HashSet<Vector2Int> nextWaveSeeds)
     {
