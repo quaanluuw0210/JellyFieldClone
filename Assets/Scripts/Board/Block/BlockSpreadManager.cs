@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 public enum SpreadDirection
 {
@@ -122,9 +121,9 @@ public class BlockSpreadManager : MonoBehaviour
                             gridSlots[target.x, target.y] = newDouble;
 
                   
-                            if (single.SpreadAnim != null)
+                            if (newDouble.SpreadAnim != null)
                             {
-                                single.SpreadAnim.MorphSingleToDouble(single, newDouble, new Vector2Int(x, y), target, onStepComplete);
+                                newDouble.SpreadAnim.MorphSingleToDouble(single, newDouble, new Vector2Int(x, y), target, onStepComplete);
                             }
                             else
                             {
@@ -179,9 +178,9 @@ public class BlockSpreadManager : MonoBehaviour
                             gridSlots[sx, sy] = newFull;
 
 
-                    if (doubleBlock.SpreadAnim != null)
+                    if (newFull.SpreadAnim != null)
                     {
-                        doubleBlock.SpreadAnim.MorphDoubleToFull(doubleBlock,newFull, onStepComplete);
+                        newFull.SpreadAnim.MorphDoubleToFull(doubleBlock,newFull, onStepComplete);
                     }
                     else
                     {

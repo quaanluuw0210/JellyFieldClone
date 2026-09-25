@@ -44,4 +44,18 @@ public class GameCordinator : MonoBehaviour
             SoundManager.Instance.PlayMainMenuMusic();
         }    
     }    
+    public void OpenQuickChooseUI()
+    {
+        UIManager.Instance.OpenQuickChooseLevel();
+    }    
+
+    public void CloseQuickChooseUI()
+    {
+        UIManager.Instance.CloseQuickChooseLevel();
+    }    
+    public void PlayLevel(int level)
+    {
+        UIManager.Instance.StartGame();
+        GameManager.instance.LoadLevel(level);
+    }    
 }

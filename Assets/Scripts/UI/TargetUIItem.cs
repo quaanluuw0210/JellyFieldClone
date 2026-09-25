@@ -1,3 +1,4 @@
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,7 +7,8 @@ public class TargetUIItem : MonoBehaviour
 {
     [SerializeField] private Image colorIcon;
     [SerializeField] private TMP_Text scoreText;
-
+    private Tween scaleTween;
+    private Tween colorTween;
 
     public JellyColor Color { get; private set; }
 
@@ -32,5 +34,16 @@ public class TargetUIItem : MonoBehaviour
         {
             if (scoreText != null) scoreText.text = currentScore.ToString();
         }
+        scaleTween?.Kill();
+        colorTween?.Kill();
+
+        transform.localScale = Vector3.one;
+
+        scaleTween = transform.DOPunchScale(Vector3.one * 0.25f, 0.25f, 10, 1f);
+    }
+    private void OnDestroy()
+    {
+        scaleTween?.Kill();
+        colorTween?.Kill();
     }
 }

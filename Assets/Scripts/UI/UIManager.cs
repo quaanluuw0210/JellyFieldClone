@@ -66,4 +66,12 @@ public class UIManager : MonoBehaviour
         ClosePopUpUI();
         ResumeGame();
     }    
+    public void OpenQuickChooseLevel()
+    {
+        mainMenuManager.QuickChooseUI();
+    }
+    public void CloseQuickChooseLevel()
+    {
+        mainMenuManager.CloseQuickChooseUI();
+    }
 }
