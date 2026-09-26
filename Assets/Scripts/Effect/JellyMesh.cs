@@ -66,7 +66,7 @@ public class JellyMesh : MonoBehaviour
         // Gán lại đỉnh cho Mesh
         MeshClone.vertices = vertexArray;
 
-        // BẮT BUỘC: Tính lại ánh sáng và viền bóng cho các góc bo tròn khi rung rinh
+        // Tính lại ánh sáng và viền bóng cho các góc bo tròn khi rung rinh
         MeshClone.RecalculateNormals();
         MeshClone.RecalculateBounds();
     }

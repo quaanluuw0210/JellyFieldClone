@@ -13,7 +13,7 @@ public class GridHighlightManager : MonoBehaviour
         if (highlightFramePrefab != null)
         {
             currentFrame = Instantiate(highlightFramePrefab, transform);
-            currentFrame.SetActive(false); // Mặc định ẩn đi
+            currentFrame.SetActive(false); 
         }
     }
 
@@ -24,7 +24,7 @@ public class GridHighlightManager : MonoBehaviour
     {
         if (currentFrame == null) return;
 
-        // Đặt vị trí khung trùng ô Grid (nâng Y lên một tí để không bị lẹm mặt bàn)
+        
         currentFrame.transform.position = worldPos + Vector3.up * 0.05f;
         currentFrame.SetActive(true);
     }

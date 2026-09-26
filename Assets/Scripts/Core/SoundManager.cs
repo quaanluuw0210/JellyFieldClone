@@ -73,7 +73,7 @@ public class SoundManager : MonoBehaviour
         sfxSource.volume = sfxVolume;
     }
 
-    // ==================== CORE METHODS ====================
+
 
     public void PlayMusic(AudioClip clip)
     {
@@ -106,7 +106,6 @@ public class SoundManager : MonoBehaviour
         sfxSource.pitch = 1f;
     }
 
-    // ==================== SPECIFIC PLAY HELPER METHODS ====================
 
     /// <summary>
     /// Phát nhạc nền Main Menu

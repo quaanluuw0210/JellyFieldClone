@@ -73,7 +73,7 @@ public class BlockSpreadManager : MonoBehaviour
     {
         animTriggered = false;
 
-        // BỚT VÒNG LẶP FOR CỐ ĐỊNH -> DUYỆT TRỰC TIẾP THEO THỨ TỰ TRONG LIST BLOCKS ĐÃ DỰNG/SORT!
+   
         foreach (JellyBlockBase jelly in blocks)
         {
             if (jelly is JellySingleBlock single && single != null)
@@ -83,7 +83,7 @@ public class BlockSpreadManager : MonoBehaviour
                 int x = slot.x;
                 int y = slot.y;
 
-                // Kiểm tra xem ô này có thực sự chứa single block này không
+                // Kiểm tra xem ô này có single block này không
                 if (gridSlots[x, y] != single) continue;
 
                 foreach (Vector2Int dir in GetPriorityDirections())
@@ -131,7 +131,7 @@ public class BlockSpreadManager : MonoBehaviour
                             Destroy(single.gameObject);
                         }
 
-                        return true; // Thực hiện thành công cho block ưu tiên đầu tiên!
+                        return true;
                     }
                 }
             }
@@ -195,7 +195,7 @@ public class BlockSpreadManager : MonoBehaviour
         return false;
     }
 
-    // --- HÀM PHỤ TRỢ CHO SPREAD ---
+   
     private IEnumerable<Vector2Int> GetPriorityDirections()
     {
         if (preferredDirection == SpreadDirection.Horizontal)
@@ -234,8 +234,6 @@ public class BlockSpreadManager : MonoBehaviour
         return (pos1 + pos2) * 0.5f;
     }
 
-    // --- LOG / ĐẾM (giữ nguyên từ code cũ) ---
-
     public int FindEmptySlot(IReadOnlyList<JellyBlockBase> livingSubBlocks)
     {
         int emptyCount = 0;
@@ -253,8 +251,6 @@ public class BlockSpreadManager : MonoBehaviour
     }
 
    
-
-    // --- REGISTER / GRID STATE (giữ nguyên từ code cũ) ---
 
     private void RegisterAll(IReadOnlyList<JellyBlockBase> blocks)
     {

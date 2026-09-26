@@ -56,44 +56,6 @@ public class BoardView : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Sinh một Block tại Cell hợp lệ, cao hơn mặt bàn 0.1 đơn vị để tránh
-    /// z-fighting với khung ô và kích hoạt animation xuất hiện.
-    /// </summary>
-    public Block SpawnBlockAt(Vector2Int gridPos, Block customBlockPrefab)
-    {
-        Debug.Log($"[SpawnBlockAt] ENTER, gridPos={gridPos}, prefab={customBlockPrefab}");
-        if (customBlockPrefab == null) { Debug.LogWarning($"[SpawnBlockAt] prefab null tại {gridPos}"); return null; }
-
-        Block prefabToSpawn = customBlockPrefab;
-
-
-        if (gridSystem == null) { Debug.LogWarning("[SpawnBlockAt] gridSystem null"); return null; }
-        if (!gridSystem.IsValidPosition(gridPos)) { Debug.LogWarning($"[SpawnBlockAt] {gridPos} không phải vị trí hợp lệ trên grid"); return null; }
-
-        Cell cell = gridSystem.GetCell(gridPos);
-        if (cell == null) { Debug.LogWarning($"[SpawnBlockAt] cell null tại {gridPos}"); return null; }
-        if (cell.HasBlock()) { Debug.LogWarning($"[SpawnBlockAt] cell {gridPos} đã có block rồi"); return null; }
-
-        Vector3 spawnPosition = GetWorldPositionForCell(gridPos);
-        spawnPosition += Vector3.up * 0.1f;
-
-        Block blockView = Instantiate(customBlockPrefab, spawnPosition, Quaternion.identity, transform);
-        blockView.name = string.Format("Block_{0}_{1}", gridPos.x, gridPos.y);
-
-        blockView.InitializePlacedState(cell);
-        blockView.SetPlaced(true);
-
-        GameManager gameManager = FindFirstObjectByType<GameManager>();
-        if (gameManager != null)
-        {
-            blockView.OnBlockDropped += gameManager.HandleBlockDropped;
-        }
-
-        blockViews.Add(blockView);
-        return blockView;
-    }
-
     public Block SpawnBlockAt(BoardCellData blockData)
     {
         if (blockData == null || blockFactory == null || gridSystem == null) return null;
@@ -224,7 +186,7 @@ public class BoardView : MonoBehaviour
 
         foreach (Cell cell in allCells)
         {
-            // Nếu tìm thấy ít nhất 1 ô hợp lệ chưa có Block -> Bàn chơi CHƯA đầy
+            // Nếu tìm thấy ít nhất 1 ô hợp lệ chưa có Block 
             if (cell != null && !cell.HasBlock())
             {
                 return false;

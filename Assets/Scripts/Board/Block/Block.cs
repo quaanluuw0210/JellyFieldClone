@@ -51,7 +51,7 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
     public IReadOnlyList<JellyBlockBase> SubBlocks => subBlocks;
     public bool IsDragging => isDragging;
 
-    private bool isPlaced = false; // Mặc định chưa đặt lên Board
+    private bool isPlaced = false; 
     private bool isProcessingRemoval = false;
     private readonly Queue<List<JellyBlockBase>> removalQueue = new Queue<List<JellyBlockBase>>();
     public bool IsProcessingRemoval => isProcessingRemoval;
@@ -142,7 +142,7 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
 
         if (mainCamera == null) mainCamera = Camera.main;
 
-        // Dừng animation cũ ngay lập tức
+        // Dừng animation cũ 
         movementTween?.Kill();
         scaleTween?.Kill();
 
@@ -213,7 +213,7 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
             Cell cell = gridSystem.GetCell(hoverGridPos);
             if (cell != null && !cell.HasBlock())
             {
-                // Lấy vị trí World chuẩn của ô đó để đặt khung
+                // Lấy vị trí World của ô đó để đặt khung
                 Vector3 targetWorldPos = gridSystem.GetWorldPosition(hoverGridPos) + boardWorldOffset;
                 GridHighlightManager.Instance?.ShowHighlight(targetWorldPos);
                 return;
@@ -302,7 +302,7 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
             .SetEase(returnEase)
             .OnComplete(() =>
             {
-                // Phôi phục vị trí cũ trên Grid nếu trước đó đã ở trong Grid
+                // Khôi phục vị trí cũ trên Grid nếu trước đó đã ở trong Grid
                 if (wasPlacedBeforeDrag)
                 {
                     Cell previousCell = gridSystem.GetCell(previousGridPosition);
@@ -313,7 +313,7 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
                 }
 
                 wasPlacedBeforeDrag = false;
-                transform.position = originalPosition; // Reset chuẩn vị trí Y
+                transform.position = originalPosition; // Reset vị trí Y gốc
               
             });
     }
@@ -374,7 +374,7 @@ public class Block : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerU
             return false;
         }
 
-        // Yêu cầu phần giao nhau (Overlap) phải lớn hơn minOverlapThreshold để không bị dính vết chạm góc
+        // Yêu cầu phần giao nhau phải lớn hơn minOverlapThreshold để không bị dính vết chạm góc
         const float minOverlapThreshold = 0.1f;
 
         if (direction == Vector2Int.left || direction == Vector2Int.right)

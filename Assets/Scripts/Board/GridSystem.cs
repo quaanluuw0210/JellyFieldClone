@@ -12,7 +12,7 @@ public class GridSystem : MonoBehaviour
 
     public float CellSize => cellSize;
 
-    // Khởi tạo Lưới theo danh sách tọa độ tùy chỉnh (Shape bất kỳ)
+    // Khởi tạo Lưới theo danh sách tọa độ tùy chỉnh 
     public void InitializeGrid(List<Vector2Int> validPositions)
     {
         gridMap.Clear();
@@ -27,21 +27,6 @@ public class GridSystem : MonoBehaviour
         }
     }
 
-    // Khởi tạo Lưới hình chữ nhật tùy chỉnh chiều rộng (Width) x chiều cao (Height)
-    public void InitializeRectangularGrid(int width, int height)
-    {
-        List<Vector2Int> customPositions = new List<Vector2Int>();
-
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                customPositions.Add(new Vector2Int(x, y));
-            }
-        }
-
-        InitializeGrid(customPositions);
-    }
 
     // Lấy Cell tại tọa độ bất kỳ (Nếu ngoài bàn chơi hoặc ô bị khuyết -> trả về null)
     public Cell GetCell(Vector2Int gridPosition)
@@ -122,8 +107,6 @@ public class GridSystem : MonoBehaviour
             return false;
         }
 
-        // Giả sử class Cell của bạn có phương thức nhận Block hoặc điền các Slot
-        // Ví dụ: Đặt block vào các sub-slot tương ứng trong Cell
         block.InitializePlacedState(cell);
 
         return true;

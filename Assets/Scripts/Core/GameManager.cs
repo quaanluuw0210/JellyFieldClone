@@ -72,7 +72,6 @@ public class GameManager : MonoBehaviour
         }
 
         // 2. Khởi tạo Bàn cờ và các Block đặt sẵn
-
         LevelConfig levelConfig = LevelLoader.LoadLevel(levelIndex + 1);
         if (levelConfig == null)
         {
@@ -162,7 +161,7 @@ public class GameManager : MonoBehaviour
 
             if (!hasMatch)
             {
-                break; // hết combo, dừng chain
+                break; // hết combo
             }
 
             anyMatchInChain = true;
@@ -184,7 +183,8 @@ public class GameManager : MonoBehaviour
             Debug.Log("[GameManager] Gộp màu thành công (chain hoàn tất)!");
         }
         isMatching = false; 
-        // Sau khi kết thúc chuỗi Match, kiểm tra xem người chơi đã thắng chưa
+
+        // kết thúc chuỗi Match, kiểm tra xem người chơi thắng/thua
         CheckWinCondition();
         CheckLossCondition();
     }
@@ -221,7 +221,7 @@ public class GameManager : MonoBehaviour
 
         if (!isInsideBoard)
         {
-            // === TRƯỜNG HỢP 1: THẢ NGOÀI BÀN CỜ ===
+          
             Debug.LogWarning($"[GameManager] Block {block.name} thả ngoài phạm vi bàn cờ (Tọa độ {gridPos} không hợp lệ).");
             return;
         }
@@ -231,10 +231,10 @@ public class GameManager : MonoBehaviour
 
         if (targetCell != null)
         {
-            // === TRƯỜNG HỢP 2: ĐÃ VÀO BOARD THÀNH CÔNG VÀ Ô ĐANG TRỐNG ===
+            
             Debug.Log($"[GameManager] Block {block.name} ĐÃ VÀO BOARD thành công tại vị trí: {gridPos}");
 
-            // a. Báo SpawnView gạch tên khối này khỏi khay
+            // a. Báo SpawnView bỏ khối này
             spawnView?.RemoveBlockFromSpawn(block);
 
             // b. Chuyển Parent transform sang BoardView
@@ -248,18 +248,18 @@ public class GameManager : MonoBehaviour
             if (SoundManager.Instance != null)
                 SoundManager.Instance.PlayDropSound();
 
-            // c. Đăng ký dữ liệu vào Cell & Khóa không cho kéo thả nữa
+            // c. Đăng ký dữ liệu vào Cell & Khóa không cho kéo thả 
             gridSystem.PlaceBlock(block, gridPos);
             block.InitializePlacedState(targetCell);
             block.SetPlaced(true);
 
-            // d. Thực hiện logic gộp màu (Match & Merge)
+            // d. Thực hiện logic gộp màu 
             StartCoroutine(RunMatchChain(gridPos));
 
         }
         else
         {
-            // === TRƯỜNG HỢP 3: TRÚNG BOARD NHƯNG Ô ĐÓ ĐÃ CÓ BLOCK KHÁC ===
+          
             Debug.LogWarning($"[GameManager] Ô {gridPos} trên Board đã bị chiếm chỗ!");
         }
     }

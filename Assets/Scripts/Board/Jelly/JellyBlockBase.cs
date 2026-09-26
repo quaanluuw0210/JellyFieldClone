@@ -17,12 +17,12 @@ public static class JellyColorExtensions
     {
         return jellyColor switch
         {
-            JellyColor.Red => Color.red,             // hoặc new Color(0.9f, 0.2f, 0.2f)
-            JellyColor.Blue => Color.blue,            // hoặc new Color(0.2f, 0.5f, 1.0f)
-            JellyColor.Green => Color.green,           // hoặc new Color(0.2f, 0.8f, 0.2f)
-            JellyColor.Yellow => Color.yellow,          // hoặc new Color(1.0f, 0.9f, 0.1f)
-            JellyColor.Purple => new Color(0.6f, 0.1f, 0.8f), // Tím
-            JellyColor.Pink => new Color(1.0f, 0.41f, 0.71f), // Hồng
+            JellyColor.Red => Color.red,            
+            JellyColor.Blue => Color.blue,            
+            JellyColor.Green => Color.green,           
+            JellyColor.Yellow => Color.yellow,          
+            JellyColor.Purple => new Color(0.6f, 0.1f, 0.8f), 
+            JellyColor.Pink => new Color(1.0f, 0.41f, 0.71f), 
             _ => Color.white
         };
     }
@@ -120,7 +120,7 @@ public abstract class JellyBlockBase : MonoBehaviour
 
     public void SetMaterial(Material newMaterial)
     {
-        material = newMaterial; // hiện field material đang private, cần setter
+        material = newMaterial; 
         ApplyVisuals();
     }
 
